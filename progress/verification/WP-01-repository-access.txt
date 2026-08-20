@@ -1,0 +1,25 @@
+WP-01 repository access record — 2026-08-20
+
+Requested local command: git status --short
+Result: NOT RUN against target; no local checkout/worktree is mounted by the connector.
+
+Requested local command: git branch --show-current
+Remote equivalent: main
+Source: GitHub branch metadata and branch search
+
+Requested local command: git rev-parse HEAD
+Remote equivalent: bfad6b0db7242686114143cc590a146871a44b21
+Source: GitHub branch metadata
+
+Requested local command: git remote -v
+Repository equivalent:
+  origin https://github.com/TS00724/fork_freeitsm_react.git (fetch)
+  origin https://github.com/TS00724/fork_freeitsm_react.git (push)
+Source: repository clone_url; no upstream remote is used or configured by this work.
+
+Visible branches: main only
+Start tree: a9f1d3e1d93f378d797f77360c7bd054206ac47c
+Push permission: true
+Publication policy: re-read main; update only if it still equals start/parent; force=false.
+Pull requests: none
+GitHub Actions: not used; .github/workflows absent
