@@ -2,7 +2,9 @@
 
 Report date: 2026-08-20  
 Target repository: `TS00724/fork_freeitsm_react`  
-Program start SHA: `bfad6b0db7242686114143cc590a146871a44b21`
+Program start SHA: `bfad6b0db7242686114143cc590a146871a44b21`  
+WP-01 commit: `b703183176db6c4ff56b6860725220cf8914d1fa`  
+WP-02 implementation commit: `75083fbef3ac1bece1b2a7397b4d60abf9456ad5`
 
 ## WP-01 — repository baseline and controls
 
@@ -61,17 +63,16 @@ re-read `main` and use a non-forced fast-forward.
 
 Implementation 95%, API/Contract 100% for the intentionally contract-free
 placeholder, Verification 35%, Docs/Handoff 100%. Effective progress is **35%**,
-Confidence **No**, status **Blocked**. The hidden blocker is not waived: a real
-lockfile, dependency install, full typecheck/lint/test/build/start, and manual
-runtime review are still required.
+Confidence **No**, status **Blocked**. A real lockfile, dependency install, full
+typecheck/lint/test/build/start, and manual runtime review are still required.
 
-## Publication checks still required
+## Publication procedure
 
-Before moving `main`: re-read its SHA, confirm exact repository URL, compare all
-changed paths, confirm no PHP/workflow/BFF/business paths, then update the ref
-with `force=false`. Literal local `git status` and `git diff --check` remain
-unavailable because no target checkout is mounted; this limitation is not
-misreported as a pass.
+The publication candidate must be compared against the program start SHA, all
+changed paths checked for PHP/workflow/BFF/business scope, repository URL and
+remote `main` re-read, and the ref updated with `force=false`. Literal local
+`git status` and `git diff --check` remain unavailable because no target checkout
+is mounted; that limitation is not misreported as a pass.
 
 ## Actions and PR confirmation
 

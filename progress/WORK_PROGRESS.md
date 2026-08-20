@@ -69,7 +69,7 @@ actual command evidence, no hidden blocker, no Actions, and no upstream PR.
 | WP | Start SHA | End SHA | Blocker | Next step |
 |---|---|---|---|---|
 | WP-01 | `bfad6b0db7242686114143cc590a146871a44b21` | `b703183176db6c4ff56b6860725220cf8914d1fa` | No mounted target worktree for literal status/uncommitted-state verification | User may repeat baseline commands in a real clone; keep all writes non-forced |
-| WP-02 | `b703183176db6c4ff56b6860725220cf8914d1fa` | WP-02 implementation commit; updated after creation | npm registry DNS, no real lockfile, dependency-backed checks unavailable | Generate/review lockfile, run local verification, then perform G1 code review |
+| WP-02 | `b703183176db6c4ff56b6860725220cf8914d1fa` | `75083fbef3ac1bece1b2a7397b4d60abf9456ad5` | npm registry DNS, no real lockfile, dependency-backed checks unavailable | Generate/review lockfile, run local verification, then perform G1 code review |
 
 ## Gate status
 
