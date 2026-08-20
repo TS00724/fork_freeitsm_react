@@ -1,0 +1,17 @@
+2026-08-20 npm registry probe
+
+Command:
+  timeout 20s npm install --package-lock-only --ignore-scripts --fetch-retries=0 --fetch-timeout=3000 --loglevel=verbose
+
+Exit: 124 (timeout)
+
+Observed before timeout:
+  npm http fetch GET https://registry.npmjs.org/@elastic%2fdatemath attempt 1 failed with EAI_AGAIN
+  npm http fetch GET https://registry.npmjs.org/@elastic%2feui attempt 1 failed with EAI_AGAIN
+  npm http fetch GET https://registry.npmjs.org/@elastic%2feui-theme-borealis attempt 1 failed with EAI_AGAIN
+  npm http fetch GET https://registry.npmjs.org/@emotion%2fcss attempt 1 failed with EAI_AGAIN
+  npm http fetch GET https://registry.npmjs.org/@emotion%2freact attempt 1 failed with EAI_AGAIN
+  npm http fetch GET https://registry.npmjs.org/moment attempt 1 failed with EAI_AGAIN
+  npm http fetch GET https://registry.npmjs.org/react attempt 1 failed with EAI_AGAIN
+
+The probe ran in a disposable copy. No partial lockfile was retained or fabricated.

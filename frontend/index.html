@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>FreeITSM React architecture review</title>
+    <script>
+      // Public, non-secret defaults only. A future thin PHP/static host may inject
+      // window.__FREEITSM_RUNTIME_CONFIG__ before this block. No BFF exists in WP-02.
+      window.__FREEITSM_RUNTIME_CONFIG__ =
+        window.__FREEITSM_RUNTIME_CONFIG__ || {
+          baseUrl: '/',
+          appPath: 'app/',
+          apiBaseUrl: 'api/ui/v1/',
+          locale: 'en-GB',
+          timezone: 'UTC',
+          colorMode: 'system'
+        };
+
+      // Vite emits relative asset URLs. An early <base> keeps those URLs stable when
+      // a server falls back to this document for a nested BrowserRouter route.
+      (function installRuntimeBase() {
+        var config = window.__FREEITSM_RUNTIME_CONFIG__;
+        var baseUrl = '/' + String(config.baseUrl || '/').replace(/^\/+|\/+$/g, '') + '/';
+        if (baseUrl === '//') baseUrl = '/';
+        var appPath = String(config.appPath || 'app/').replace(/^\/+|\/+$/g, '');
+        var base = document.createElement('base');
+        base.href = baseUrl + (appPath ? appPath + '/' : '');
+        document.head.appendChild(base);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>JavaScript is required to review the React application shell.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

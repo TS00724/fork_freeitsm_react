@@ -1,0 +1,22 @@
+WP-02 static and dependency-independent checks — 2026-08-20
+
+PASS npm run verify:structure (exit 0)
+  Structure check passed (14 required files).
+
+PASS npm run verify:isolation (exit 0)
+  No PHP, BFF, or business feature code in frontend.
+
+PASS dependency-independent runtime/API assertions (exit 0)
+  BASE_URL /freeitsm-app/, router basename /freeitsm-app/app,
+  placeholder API /freeitsm-app/api/ui/v1/, credentials same-origin,
+  and optional CSRF extension hook behaved as designed.
+
+PASS early index runtime-base assertion (exit 0)
+  The injected base for a subdirectory deployment was /freeitsm-app/app/.
+
+PASS static scope assertions (exit 0)
+  No frontend PHP, api/ui/v1 implementation, business feature, workflow,
+  node_modules, dist, real secret env file, or PHP build target was detected.
+
+INCONCLUSIVE full TypeScript/EUI/Router compatibility
+  Dependency-backed resolution was not available. It is not recorded as passed.

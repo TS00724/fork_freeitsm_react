@@ -9,15 +9,15 @@ Hard constraint: **Do not create, run, edit, or depend on GitHub Actions.**
 
 Effective progress is the minimum of Implementation, API/Contract, Verification,
 and Docs/Handoff. `Verified complete` requires all four at 100%, Confidence Yes,
-real command evidence, no hidden blocker, no Actions, and no upstream PR.
+actual command evidence, no hidden blocker, no Actions, and no upstream PR.
 
 ## Program summary
 
 | Metric | Value |
 |---|---:|
 | Verified work packages | 0 / 37 |
-| Current package | WP-02 |
-| Next mandatory gate | G1 after WP-02 |
+| Current package | G1 review |
+| Next mandatory gate | G1 — waiting for user |
 | GitHub Actions | Not used |
 | Pull requests | None |
 | Go/go-zero | Out of scope |
@@ -26,11 +26,11 @@ real command evidence, no hidden blocker, no Actions, and no upstream PR.
 
 | WP | Phase | Scope | Status | Impl % | API % | Verify % | Docs % | Effective % | Confidence | Gate / next stop |
 |---|---|---|---|---:|---:|---:|---:|---:|---|---|
-| WP-01 | P00 | Baseline, inventory, route/API matrix and control files | In progress | 100 | 100 | 90 | 100 | 90 | No | Local target worktree/status unavailable; proceed safely to isolated WP-02 |
-| WP-02 | P01 | Isolated React 18/TS/EUI/Vite scaffold | Not started | 0 | 0 | 0 | 0 | 0 | No | **Stop at G1; do not start BFF** |
-| WP-03 | P02 | User architecture walkthrough and ADRs | Not started | 0 | 0 | 0 | 0 | 0 | No | Enter only after G1 approval |
+| WP-01 | P00 | Baseline, inventory, route/API matrix and control files | In progress | 100 | 100 | 90 | 100 | 90 | No | Literal target worktree/status remains unavailable |
+| WP-02 | P01 | Isolated React 18/TS/EUI/Vite scaffold | Blocked | 95 | 100 | 35 | 100 | 35 | No | **Stopped at G1; restore npm and verify before 100%** |
+| WP-03 | P02 | User architecture walkthrough and ADRs | Not started | 0 | 0 | 0 | 0 | 0 | No | Enter only after written G1 approval |
 | WP-04 | P03 | `/api/ui/v1` BFF front controller and contracts | Not started | 0 | 0 | 0 | 0 | 0 | No | Not authorized |
-| WP-05 | P03 | Session, CSRF, tenant, RBAC and object scope | Not started | 0 | 0 | 0 | 0 | 0 | No | G2; no modules before approval |
+| WP-05 | P03 | Session, CSRF, tenant, RBAC and object scope | Not started | 0 | 0 | 0 | 0 | 0 | No | Not authorized; G2 later |
 | WP-06 | P04 | AppShell, routing, theme and i18n | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
 | WP-07 | P04 | Notifications, search, files and streams | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
 | WP-08 | P05 | Watchtower pilot vertical slice | Not started | 0 | 0 | 0 | 0 | 0 | No | G3 |
@@ -68,10 +68,12 @@ real command evidence, no hidden blocker, no Actions, and no upstream PR.
 
 | WP | Start SHA | End SHA | Blocker | Next step |
 |---|---|---|---|---|
-| WP-01 | `bfad6b0db7242686114143cc590a146871a44b21` | WP-01 commit; updated after creation | No mounted target worktree for literal status/uncommitted-state verification | Build only isolated WP-02 foundation and record real validation |
-| WP-02 | Pending WP-01 commit | Pending | Not started | Stop at G1 after implementation/verification |
+| WP-01 | `bfad6b0db7242686114143cc590a146871a44b21` | `b703183176db6c4ff56b6860725220cf8914d1fa` | No mounted target worktree for literal status/uncommitted-state verification | User may repeat baseline commands in a real clone; keep all writes non-forced |
+| WP-02 | `b703183176db6c4ff56b6860725220cf8914d1fa` | WP-02 implementation commit; updated after creation | npm registry DNS, no real lockfile, dependency-backed checks unavailable | Generate/review lockfile, run local verification, then perform G1 code review |
 
 ## Gate status
 
-G1 is **Pending**. WP-03, BFF, session/CSRF/RBAC, Watchtower, Tickets, and every
-other business module are not authorized.
+G1 is **Waiting for user review**. WP-03, BFF, session/CSRF/RBAC, Watchtower,
+Tickets, and every other business module remain not started.
+
+**已停止在 G1，等待用户审核，尚未开始 BFF。**

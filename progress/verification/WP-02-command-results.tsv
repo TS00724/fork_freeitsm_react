@@ -1,0 +1,18 @@
+command	exit_code	classification	result
+node --version	0	environment	v22.16.0
+npm --version	0	environment	10.9.2
+php --version	0	environment	PHP 8.4.23 CLI
+git --version	0	environment	git 2.47.3
+npm run verify:structure	0	applicable	14 required files present
+npm run verify:isolation	0	applicable	no PHP, BFF, or business feature in frontend
+npm run verify:lockfile	1	blocked	package-lock.json missing
+npm ci --ignore-scripts --fetch-retries=0 --fetch-timeout=3000	1	blocked	npm ci requires a lockfile
+npm run typecheck	1	blocked	dependency type definitions not installed
+npm run lint	127	blocked	eslint not installed
+npm run test	127	blocked	vitest not installed
+npm run build	1	blocked	TypeScript stops on missing dependency types
+npm run dev -- --host 127.0.0.1	127	blocked	vite not installed
+timeout 20s npm install --package-lock-only --ignore-scripts --fetch-retries=0 --fetch-timeout=3000	124	blocked	registry requests failed EAI_AGAIN before timeout
+node dependency-independent runtime/API assertions	0	supplemental	BASE_URL and same-origin transport checks passed
+node index runtime-base assertion	0	supplemental	/freeitsm-app/app/ base passed
+static scope/isolation assertions	0	applicable	no PHP/BFF/features/workflows/generated output/secrets
