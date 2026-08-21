@@ -53,7 +53,7 @@ function normalizeApiBaseUrl(value: string | undefined, baseUrl: string): string
 
 export function loadRuntimeConfig(input: RuntimeConfigInput = {}): RuntimeConfig {
   const baseUrl = normalizeBaseUrl(input.baseUrl);
-  const appPath = normalizeRelativePath(input.appPath ?? 'app/', 'app/');
+  const appPath = normalizeRelativePath(input.appPath ?? 'ui/', 'ui/');
   const routerPath = joinUrlPath(baseUrl, appPath);
   const routerBasePath = routerPath === '/' ? '/' : routerPath.replace(/\/$/, '');
 
@@ -62,8 +62,8 @@ export function loadRuntimeConfig(input: RuntimeConfigInput = {}): RuntimeConfig
     appPath,
     routerBasePath,
     apiBaseUrl: normalizeApiBaseUrl(input.apiBaseUrl, baseUrl),
-    locale: input.locale?.trim() || 'en-GB',
+    locale: input.locale?.trim() || 'en',
     timezone: input.timezone?.trim() || 'UTC',
-    colorMode: input.colorMode ?? 'system'
+    colorMode: input.colorMode ?? 'light'
   };
 }

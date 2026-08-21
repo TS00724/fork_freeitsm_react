@@ -1,80 +1,73 @@
 # FreeITSM React migration verification report
 
-Report date: 2026-08-20  
+Report date: 2026-08-21  
 Target repository: `TS00724/fork_freeitsm_react`  
-Program start SHA: `bfad6b0db7242686114143cc590a146871a44b21`  
-WP-01 commit: `b703183176db6c4ff56b6860725220cf8914d1fa`  
-WP-02 implementation commit: `75083fbef3ac1bece1b2a7397b4d60abf9456ad5`
+WP-03 start SHA: `2e7e15f7f1e84d171aec50e14b207013333802db`
 
-## WP-01 — repository baseline and controls
+## Existing WP-01 / WP-02 verification state
+
+The repository still records WP-01 effective progress 90% and WP-02 effective progress 35%. Those values are not rewritten upward in WP-03 because the current environment still lacks the target local checkout evidence used by WP-01 and still lacks a trustworthy project lockfile/dependency install for WP-02.
+
+## WP-03 — G1 architecture walkthrough and ADRs
+
+### Source verification performed
 
 | Check | Result | Evidence |
 |---|---|---|
-| Repository identity and push permission | Pass | Repository metadata identifies only the target fork and exact clone URL |
-| Current branch/SHA | Pass | Remote `main` at the start SHA |
-| Visible branches | Pass | Only `main` returned |
-| Master plan/progress read | Pass | Both existing progress files read completely |
-| Existing frontend/manifests | Pass | No `frontend/`, React/Vite/TSX manifest or lockfile found |
-| API/session/routing boundaries | Pass | Required PHP/API/security/service paths inspected |
-| `.github/workflows/` absence | Pass | `.github` contains only Issue Template |
-| Local `git status --short` against target | Not run | No mounted target checkout is exposed by the environment |
-| Independent full extension recount | Not run | Remote tree inspected; source-audit counts retained and labeled |
+| Remote `main` re-read before work | Pass | `main` was `2e7e15f7f1e84d171aec50e14b207013333802db` |
+| G1 decision source | Pass | User supplied mount/server/shell/theme/auth/identity/i18n/type/pilot/test decisions on 2026-08-21 |
+| Current PHP shell inspected | Pass | `includes/header.php` confirms familiar Inbox/Reports/Users/Assets/Settings/Logs/Knowledge/Calendar/user/logout structure |
+| Existing CSRF limitation inspected | Pass | `includes/request_guard.php` documents no complete CSRF-token mechanism |
+| Existing session hardening inspected | Pass | `includes/session_security.php` handles session rotation and hardened cookie attributes |
+| Public machine API boundary inspected | Pass | `/api/v1` remains Bearer API-key based and separate from browser Session auth |
+| React mount decision applied | Source authored | Runtime defaults and index defaults changed from `app/` to `ui/` |
+| Light default applied | Source authored | Runtime/index default changed from `system` to `light` |
+| Playwright architecture | Source authored | `@playwright/test` 1.62.1, Chromium/Firefox/WebKit config, shell/deep-link tests |
+| Accessibility automation | Source authored | `@axe-core/playwright` 4.13.0 with serious/critical violation blocking |
+| PHP/EUI shell mapping | Documented | `docs/react-migration/PHP_EUI_SHELL_MAPPING.md` |
+| Future auth/CSRF direction | Documented only | ADR-002; no server handler created |
+| GitHub Actions | Pass by scope | No workflow file authored or required |
+| Business module migration | Pass by scope | None authored |
+| BFF implementation | Pass by scope | None authored |
 
-Result: Implementation 100%, API/Contract 100%, Verification 90%, Docs/Handoff
-100%; effective 90%, Confidence **No**, status **In progress**. Publication must
-re-read `main` and use a non-forced fast-forward.
+### Dependency-backed commands
 
-## WP-02 — isolated React/EUI foundation
+The following are **not reported as executed in WP-03** because the pre-existing npm registry/lockfile blocker remains unresolved in this execution environment:
 
-### Actual commands
+```text
+npm ci
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+npx playwright install
+npm run test:e2e
+npm run test:a11y
+```
 
-| Command/check | Exit | Classification | Result |
-|---|---:|---|---|
-| `npm run verify:structure` | 0 | Applicable | Passed |
-| `npm run verify:isolation` | 0 | Applicable | Passed |
-| `npm run verify:lockfile` | 1 | Blocked | No lockfile |
-| `npm ci --ignore-scripts --fetch-retries=0 --fetch-timeout=3000` | 1 | Blocked | npm requires lockfile |
-| `npm run typecheck` | 1 | Blocked | Missing dependency type definitions |
-| `npm run lint` | 127 | Blocked | ESLint not installed |
-| `npm run test` | 127 | Blocked | Vitest not installed |
-| `npm run build` | 1 | Blocked | TypeScript stops on missing types |
-| `npm run dev -- --host 127.0.0.1` | 127 | Blocked | Vite not installed |
-| disposable lockfile probe | 124 | Blocked | npm registry `EAI_AGAIN`, then timeout |
-| dependency-free runtime/API assertions | 0 | Supplemental | Passed |
-| early runtime `<base>` assertion | 0 | Supplemental | Passed for `/freeitsm-app/app/` |
-| static scope/isolation assertions | 0 | Applicable | Passed |
+### Playwright package selection
 
-### Required behavior status
+On 2026-08-21, current npm registry information was checked before pinning the test scaffolding:
 
-| Requirement | Status | Evidence/limit |
-|---|---|---|
-| React entry can start | Not verified | Vite dependency unavailable |
-| AppShell renders | Test authored, not executed | Vitest unavailable |
-| Direct subroute with BASE_URL | Logic passed; render not verified | Runtime basename/base assertions passed; component test blocked |
-| 404 reachable | Test authored, not executed | Vitest unavailable |
-| Light/dark theme | Implemented; test authored, not executed | Dependency test blocked |
-| PHP entry unaffected | Pass by scope | Zero PHP changes |
-| Build output separated | Pass by config/static check | `frontend/dist/`; no PHP target |
-| No Actions addition/change | Pass | No workflow path in patch |
-| No business module migration | Pass | `features/` contains convention README only |
-| No BFF implementation | Pass | No `api/ui/v1` path or PHP handler |
+- `@playwright/test`: `1.62.1`
+- `@axe-core/playwright`: `4.13.0`
 
-### Result
+These pins are provisional until a real project lockfile is generated and reviewed.
 
-Implementation 95%, API/Contract 100% for the intentionally contract-free
-placeholder, Verification 35%, Docs/Handoff 100%. Effective progress is **35%**,
-Confidence **No**, status **Blocked**. A real lockfile, dependency install, full
-typecheck/lint/test/build/start, and manual runtime review are still required.
+### WP-03 result
 
-## Publication procedure
+Implementation 95%, API/Contract direction 100%, Verification 45%, Docs/Handoff 100%. Effective progress is **45%**, Confidence **No**, status **In progress**.
 
-The publication candidate must be compared against the program start SHA, all
-changed paths checked for PHP/workflow/BFF/business scope, repository URL and
-remote `main` re-read, and the ref updated with `force=false`. Literal local
-`git status` and `git diff --check` remain unavailable because no target checkout
-is mounted; that limitation is not misreported as a pass.
+The missing evidence is dependency-backed execution of the updated runtime tests and Playwright/axe suite. WP-03 must not be marked `Verified complete` until a trustworthy lockfile/install is available and the applicable commands pass.
 
-## Actions and PR confirmation
+## No-scope-creep confirmation
 
-No GitHub Actions workflow was created, modified, executed, or depended upon.
-No pull request was created or sent upstream.
+WP-03 does not implement:
+
+- `/api/ui/v1` PHP handlers;
+- session/bootstrap endpoints;
+- CSRF generation/validation server code;
+- tenant/RBAC/object-scope server code;
+- Calendar, Watchtower, Tickets, Assets, CMDB or any other business module;
+- Nginx or Go/go-zero deployment;
+- GitHub Actions.

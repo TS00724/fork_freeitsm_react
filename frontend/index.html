@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-GB">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,15 +7,15 @@
     <title>FreeITSM React architecture review</title>
     <script>
       // Public, non-secret defaults only. A future thin PHP/static host may inject
-      // window.__FREEITSM_RUNTIME_CONFIG__ before this block. No BFF exists in WP-02.
+      // window.__FREEITSM_RUNTIME_CONFIG__ before this block. No BFF exists in WP-03.
       window.__FREEITSM_RUNTIME_CONFIG__ =
         window.__FREEITSM_RUNTIME_CONFIG__ || {
           baseUrl: '/',
-          appPath: 'app/',
+          appPath: 'ui/',
           apiBaseUrl: 'api/ui/v1/',
-          locale: 'en-GB',
+          locale: 'en',
           timezone: 'UTC',
-          colorMode: 'system'
+          colorMode: 'light'
         };
 
       // Vite emits relative asset URLs. An early <base> keeps those URLs stable when
@@ -24,7 +24,7 @@
         var config = window.__FREEITSM_RUNTIME_CONFIG__;
         var baseUrl = '/' + String(config.baseUrl || '/').replace(/^\/+|\/+$/g, '') + '/';
         if (baseUrl === '//') baseUrl = '/';
-        var appPath = String(config.appPath || 'app/').replace(/^\/+|\/+$/g, '');
+        var appPath = String(config.appPath || 'ui/').replace(/^\/+|\/+$/g, '');
         var base = document.createElement('base');
         base.href = baseUrl + (appPath ? appPath + '/' : '');
         document.head.appendChild(base);

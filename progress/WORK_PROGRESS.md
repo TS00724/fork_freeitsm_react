@@ -7,30 +7,29 @@ Hard constraint: **Do not create, run, edit, or depend on GitHub Actions.**
 
 ## Progress rules
 
-Effective progress is the minimum of Implementation, API/Contract, Verification,
-and Docs/Handoff. `Verified complete` requires all four at 100%, Confidence Yes,
-actual command evidence, no hidden blocker, no Actions, and no upstream PR.
+Effective progress is the minimum of Implementation, API/Contract, Verification, and Docs/Handoff. `Verified complete` requires all four at 100%, Confidence Yes, actual command evidence, no hidden blocker, no Actions, and no upstream PR.
 
 ## Program summary
 
 | Metric | Value |
 |---|---:|
 | Verified work packages | 0 / 37 |
-| Current package | G1 review |
-| Next mandatory gate | G1 — waiting for user |
+| Current package | WP-03 architecture walkthrough / ADRs |
+| G1 | **Approved by user on 2026-08-21** |
+| Next mandatory gate | G2 after WP-05; not entered in this work period |
 | GitHub Actions | Not used |
 | Pull requests | None |
-| Go/go-zero | Out of scope |
+| Go/go-zero | Future only; not implemented |
 
 ## Work-package tracker
 
 | WP | Phase | Scope | Status | Impl % | API % | Verify % | Docs % | Effective % | Confidence | Gate / next stop |
 |---|---|---|---|---:|---:|---:|---:|---:|---|---|
 | WP-01 | P00 | Baseline, inventory, route/API matrix and control files | In progress | 100 | 100 | 90 | 100 | 90 | No | Literal target worktree/status remains unavailable |
-| WP-02 | P01 | Isolated React 18/TS/EUI/Vite scaffold | Blocked | 95 | 100 | 35 | 100 | 35 | No | **Stopped at G1; restore npm and verify before 100%** |
-| WP-03 | P02 | User architecture walkthrough and ADRs | Not started | 0 | 0 | 0 | 0 | 0 | No | Enter only after written G1 approval |
-| WP-04 | P03 | `/api/ui/v1` BFF front controller and contracts | Not started | 0 | 0 | 0 | 0 | 0 | No | Not authorized |
-| WP-05 | P03 | Session, CSRF, tenant, RBAC and object scope | Not started | 0 | 0 | 0 | 0 | 0 | No | Not authorized; G2 later |
+| WP-02 | P01 | Isolated React 18/TS/EUI/Vite scaffold | Blocked | 95 | 100 | 35 | 100 | 35 | No | npm/lockfile dependency verification remains blocked |
+| WP-03 | P02 | User architecture walkthrough, G1 decisions, ADRs and E2E strategy | In progress | 95 | 100 | 45 | 100 | 45 | No | Playwright/axe authored but not executable until npm/lockfile blocker is cleared; **do not start BFF in this work period** |
+| WP-04 | P03 | `/api/ui/v1` BFF front controller and contracts | Not started | 0 | 0 | 0 | 0 | 0 | No | Not started |
+| WP-05 | P03 | Session, CSRF, tenant, RBAC and object scope | Not started | 0 | 0 | 0 | 0 | 0 | No | Not started; G2 later |
 | WP-06 | P04 | AppShell, routing, theme and i18n | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
 | WP-07 | P04 | Notifications, search, files and streams | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
 | WP-08 | P05 | Watchtower pilot vertical slice | Not started | 0 | 0 | 0 | 0 | 0 | No | G3 |
@@ -49,7 +48,7 @@ actual command evidence, no hidden blocker, no Actions, and no upstream PR.
 | WP-21 | P10 | Process Mapper | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
 | WP-22 | P11 | Contracts and Documents | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
 | WP-23 | P11 | RFP Builder | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
-| WP-24 | P12 | Calendar and Morning Checks | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
+| WP-24 | P12 | Calendar and Morning Checks | Not started | 0 | 0 | 0 | 0 | 0 | No | **Calendar recommended as first future vertical slice after security foundation** |
 | WP-25 | P12 | Service Status, Software and Reporting/Intune | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
 | WP-26 | P13 | Workflow | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
 | WP-27 | P13 | Forms | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
@@ -64,16 +63,21 @@ actual command evidence, no hidden blocker, no Actions, and no upstream PR.
 | WP-36 | P17 | SOC subsystem contract and future boundary | Not started | 0 | 0 | 0 | 0 | 0 | No | Contracts only; no Go work |
 | WP-37 | P17 | Cutover, rollback and legacy retirement | Not started | 0 | 0 | 0 | 0 | 0 | No | G7 |
 
-## WP-01/WP-02 control fields
+## G1 accepted decisions
 
-| WP | Start SHA | End SHA | Blocker | Next step |
-|---|---|---|---|---|
-| WP-01 | `bfad6b0db7242686114143cc590a146871a44b21` | `b703183176db6c4ff56b6860725220cf8914d1fa` | No mounted target worktree for literal status/uncommitted-state verification | User may repeat baseline commands in a real clone; keep all writes non-forced |
-| WP-02 | `b703183176db6c4ff56b6860725220cf8914d1fa` | `75083fbef3ac1bece1b2a7397b4d60abf9456ad5` | npm registry DNS, no real lockfile, dependency-backed checks unavailable | Generate/review lockfile, run local verification, then perform G1 code review |
+- React prefix: `${BASE_URL}ui/`
+- PHP/React parallel strangler migration
+- Apache current; Nginx future-compatible
+- PHP information architecture mapped to EUI shell patterns
+- default Light theme
+- future PHP Session + 401/403 + session-bound CSRF + Origin strategy
+- SOC level-1 identity → FreeITSM level-2 adapter/context
+- English + `zh-CN` + `zh-TW`; timezone separately configurable
+- hybrid OpenAPI/generated DTO + handwritten frontend model
+- Calendar recommended first future vertical slice; Watchtower next; Tickets later
+- Playwright primary E2E; Selenium fallback
+- coverage + a11y + E2E/security negatives + Human QoS
 
-## Gate status
+## Current stop
 
-G1 is **Waiting for user review**. WP-03, BFF, session/CSRF/RBAC, Watchtower,
-Tickets, and every other business module remain not started.
-
-**已停止在 G1，等待用户审核，尚未开始 BFF。**
+WP-03 documentation and test scaffolding are being completed. The existing npm registry/lockfile blocker prevents dependency-backed verification. **No BFF, Session/CSRF/RBAC server implementation, Watchtower, Tickets or other business module has started.**
