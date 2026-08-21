@@ -2,9 +2,10 @@
 
 版本：1.0  
 基准日期：2026-08-19  
+事实校正：2026-08-21（现行 React 前缀、安装状态与 pilot 冻结）
 目标仓库：https://github.com/TS00724/fork_freeitsm_react  
 执行方式：GPT Pro 分工期持续实施 + 用户在关键架构门参与代码阅读、决策和微调  
-硬约束：禁止使用 GitHub Actions
+硬约束：禁止使用 GitHub Actions；禁止创建 Pull Request；Go/go-zero 与集群化不在当前实施范围
 
 ## 1. 结论：18 个阶段，37 个 GPT Pro 工期
 
@@ -14,7 +15,7 @@
 
 本计划故意不把工作压缩成少数大阶段。当前仓库约有 2,021 个文件、1,657 个 PHP 文件、167 个原生 JavaScript 文件、约 719 个内部 PHP API，以及 22 个主要模块。Tickets、BFF、安全/租户/RBAC、System Admin 和高交互编辑器均足以独占一次甚至多次长上下文。
 
-> GitHub main 在本计划复核时仍未看到 frontend/、React、Vite 或 package manifest。若第一次搭建存在于本地、其他分支或尚未推送的工作树，WP-01 必须先识别并保护它，不能重复覆盖。
+> 历史基准：2026-08-19 复核 GitHub main 时仍未看到 frontend/、React、Vite 或 package manifest。该陈述只描述当时基准；当前仓库已经建立隔离式 `frontend/`，不得把这条历史记录误当成现状或重新搭建。
 
 ## 2. 三条项目路线
 
@@ -57,12 +58,12 @@
 1. 本文件；
 2. WORK_PROGRESS.md 与最新进度表；
 3. VERIFICATION_REPORT.md；
-4. docs/react-migration/DECISION_LOG.md；
-5. 最新一个 docs/react-migration/handoffs/WP-XX.md；
+4. progress/DECISION_LOG.md；
+5. 最新一个 handoffs/WP-XX.md；
 6. 本工期相关 ADR 和模块 inventory；
 7. git status --short、当前分支、最近提交和未提交 diff。
 
-每个工期结束前必须新建 docs/react-migration/handoffs/WP-XX.md，内容固定为：
+每个工期结束前必须新建或更新 handoffs/WP-XX.md，内容固定为：
 
 - 起始/结束 commit SHA 与分支；
 - 本期目标和明确非目标；
@@ -74,7 +75,7 @@
 - 未完成项、blocker 和风险；
 - 下一工期首先应读取的 5–10 个文件；
 - 是否有信心 100% 完成：Yes/No；若 No，缺什么证据；
-- 确认没有创建或依赖 GitHub Actions。
+- 确认没有创建或依赖 GitHub Actions，也没有创建 Pull Request。
 
 单个工期超过以下任一条件时必须拆分，不得继续扩大范围：
 
@@ -94,14 +95,14 @@
 | P02 用户参与的架构复审 | 1 | 3% | 逐文件讲解入口、providers、router、API client 占位、feature 结构、测试与构建；记录修改意见 | 用户签署目录、路由、状态管理、构建输出与 BFF 方针 |
 | P03 BFF 契约与安全底座 | 2 | 9% | /api/ui/v1 front controller、统一响应、OpenAPI/TS 契约、session/bootstrap、login/logout、CSRF、tenant/RBAC/service context | **G2：用户检查 BFF 路由、安全边界与代码可读性** |
 | P04 React 平台公共能力 | 2 | 7% | AppShell、导航、错误边界、theme、i18n、timezone、permissions、tenant switch、notifications、search、文件/流适配 | 公共能力有测试且旧 PHP 页面仍可 fallback |
-| P05 Pilot 纵向切片 | 1 | 4% | Watchtower（含设置）完整 React/EUI + BFF 迁移，验证读写、权限、租户、主题、i18n | **G3：用户实际演示并决定后续模块 UI 模式** |
+| P05 Pilot 纵向切片 | 1 | 4% | 历史基准为 Watchtower；D-018 改为 Calendar-first 后与 WP 排程冲突，现冻结至 G2 重新规划 | **G3：由 G2 确认后的 pilot 实际演示并决定后续模块 UI 模式** |
 | P06 Tickets 全量迁移 | 4 | 13% | 列表/筛选/详情/thread；创建/回复/附件/notes；分配/批量/SLA/snooze/presence；merge/split/triage/dashboard/settings | **G4：核心工单业务逐项 parity 审核** |
 | P07 Assets | 2 | 6% | inventory/detail/custody/users/tickets/labels/scan；dashboard/settings/vCenter/Intune 衔接 | 资产与租户隔离、文件和二维码流程通过 |
 | P08 Knowledge + Tasks | 2 | 6% | 知识编辑/检索/AI/review/audience；任务 board/list/calendar/timeline/settings | 两模块分别完成 DoD |
 | P09 Change + Problem | 2 | 5% | Change/CAB/审批/附件/calendar/settings；Problem/RCA/links/notes/settings | ITIL 关系与审计链验证 |
 | P10 CMDB + Network/Process Mapper | 3 | 7% | CMDB class/object/relationship/impact；Network Mapper；Process Mapper | 图形编辑器可保存/恢复，复杂组件有 adapter |
 | P11 Contracts + Documents + RFP | 2 | 6% | supplier/contract/term/payment；统一 documents；RFP 上传/抽取/合并/评分/AI | 文件权限、版本与敏感数据检查 |
-| P12 运营模块 | 2 | 5% | Calendar、Morning Checks、Service Status、Software、Reporting/Intune | feed、图表、状态历史和 drill-down 验证 |
+| P12 运营模块 | 2 | 5% | 历史基准包含 Calendar；最终归属须与 G2 的 Calendar-first pilot 重排保持一致 | feed、图表、状态历史和 drill-down 验证 |
 | P13 Workflow + Forms + LMS | 3 | 7% | workflow editor/execution/settings；form builder/submission/approval；course/SCORM/progress | 高交互编辑器分包验证，不强迫纯 EUI |
 | P14 Messaging + Integrations + War Room | 2 | 4% | channel/template/send/AI；Jira/Azure DevOps/Slack 等；War Room | 外部服务缺凭据时明确 Blocked，不伪造 |
 | P15 System Admin | 2 | 4% | analysts/teams/roles/capabilities/companies/modules/preferences；SSO/LDAP/security/API keys/webhooks/search/db verify/debug | **G5：用户重点审查权限、秘密与破坏性操作** |
@@ -109,6 +110,11 @@
 | P17 系统硬化、SOC 就绪与切换 | 3 | 6% | 全局 parity/security/a11y/i18n/performance；SOC 子系统契约/可观测性；路由切换、rollback、旧 UI/API 退役、最终报告 | **G7：用户最终验收；Go-zero 仍不实施** |
 
 总权重：100%。
+
+当前计划控制：D-018 的 Calendar → Watchtower → Tickets 推荐顺序与旧版
+WP-08/WP-24 编排不一致。WP-04 与 WP-05 不受影响；在 G2 发布统一的
+work-package 重排之前，Calendar、Watchtower、Tickets 和其他 feature pilot
+全部冻结，不得依据任一旧表单独启动，也不得静默改写历史编号。
 
 ## 5. 37 个 GPT Pro 工期
 
@@ -119,7 +125,7 @@
 - WP-03：用户参与的文件框架 walkthrough 与架构签署；
 - WP-04–05：BFF 契约、安全、session/CSRF、tenant/RBAC；
 - WP-06–07：React 平台公共能力；
-- WP-08：Watchtower Pilot；
+- WP-08：历史基准为 Watchtower Pilot；当前冻结，等待 G2 与 D-018 统一重排；
 - WP-09–12：Tickets 四个纵向切片；
 - WP-13–14：Assets 两个切片；
 - WP-15：Knowledge；
@@ -131,7 +137,7 @@
 - WP-21：Process Mapper；
 - WP-22：Contracts + Documents；
 - WP-23：RFP Builder；
-- WP-24：Calendar + Morning Checks；
+- WP-24：历史基准为 Calendar + Morning Checks；当前冻结，等待 G2 与 D-018 统一重排；
 - WP-25：Service Status + Software + Reporting/Intune；
 - WP-26：Workflow；
 - WP-27：Forms；
@@ -220,7 +226,8 @@ docs/react-migration/
 - React 不直接读数据库；
 - PHP 只允许保留极薄的 SPA host/runtime config；
 - Node 仅用于 build/test，不作为生产后端；
-- 在用户完成 G1 架构复审前，不开始大规模 BFF 或模块迁移。
+- G1 架构复审已经批准；只有验证收尾允许放行后才能开始 WP-04/05 BFF。
+- Calendar、Watchtower、Tickets 与其他 feature pilot 在 G2 重排前不得开始。
 
 ## 7. 七个用户审核门
 
@@ -234,7 +241,7 @@ docs/react-migration/
 
 ### G3：Pilot 后
 
-用户实际操作 Watchtower，确定卡片、设置页、Flyout、错误/空状态和移动端模式是否作为其余模块范式。
+用户实际操作 G2 重新规划并明确命名的 pilot，确定页面、表单/Flyout、错误/空状态和移动端模式是否作为其余模块范式。旧版仅指定 Watchtower 的描述属于历史基准。
 
 ### G4：Tickets 后
 
@@ -266,10 +273,15 @@ docs/react-migration/
 - 无未处理 console error、Promise rejection、secret/API key 泄露；
 - progress、verification、decision log 和 handoff 已更新；
 - 没有创建、运行或依赖 GitHub Actions。
+- 没有创建 Pull Request，也没有向上游提交任何请求。
+- 没有把未来 Go/go-zero、集群或 SOC 主系统实现混入当前工期。
 
 若缺外部凭据、数据库、SSO 账户或真实集成，必须标 Blocked 或 Not verified，不能用 mock 结果冒充 100%。
 
-## 9. 交给下一次 GPT Pro 的首个工期指令
+## 9. 历史首期指令与当前执行入口
+
+以下引用是 WP-01/WP-02 的历史首期指令，已执行，**不得再次作为当前
+入口重复搭建 frontend/**：
 
 > 执行 WP-01，然后执行 WP-02；WP-02 完成后必须停止，不得开始 BFF。  
 > 首先检查分支、工作树以及是否已有本地/其他分支的 frontend/ 初次搭建，保护任何用户修改。  
@@ -279,6 +291,14 @@ docs/react-migration/
 > 本地运行 typecheck、lint、unit、build、必要的 Docker/static smoke test，并更新 WORK_PROGRESS、VERIFICATION_REPORT 和 handoffs/WP-02.md。  
 > 完成后给用户一份逐文件阅读顺序、需要用户选择的架构问题和可运行预览，然后等待 G1 审核。  
 > 绝对禁止使用或创建 GitHub Actions。
+
+当前入口必须以 `progress/WORK_PROGRESS.md` 与最新 verification/handoff 为
+准。依赖安装阻塞及 non-browser `npm run verify` 已有通过证据；Playwright/
+axe 因浏览器二进制下载失败仍未执行，Apache fallback、Human QoS 与 EUI
+许可接受也仍未完成。验证收尾放行后，下一范围仅为
+WP-04/05 的 PHP UI BFF 契约与安全底座；任何 feature pilot 冻结至 G2
+完成重排。全过程禁止 GitHub Actions 和 Pull Request，Go/go-zero 与集群
+实施继续保持 future-only。
 
 ## 10. 基准证据
 

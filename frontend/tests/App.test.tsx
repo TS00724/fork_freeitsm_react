@@ -4,7 +4,7 @@ import { afterEach, describe, it } from 'vitest';
 import { App } from '../src/app/App';
 import { loadRuntimeConfig } from '../src/config/runtimeConfig';
 
-const config = loadRuntimeConfig({ baseUrl: '/', appPath: 'app/', colorMode: 'light' });
+const config = loadRuntimeConfig({ baseUrl: '/', appPath: 'ui/', colorMode: 'light' });
 
 afterEach(() => cleanup());
 
@@ -15,24 +15,24 @@ function renderPath(path: string) {
 
 describe('foundation routes', () => {
   it('renders the AppShell and foundation page at the configured basename', () => {
-    renderPath('/app/');
+    renderPath('/ui/');
     screen.getByRole('banner');
     screen.getByRole('heading', { name: /WP-02 architecture review shell/i });
   });
 
   it('makes the 403 skeleton directly reachable', () => {
-    renderPath('/app/forbidden');
+    renderPath('/ui/forbidden');
     screen.getByRole('heading', { name: /403/i });
   });
 
   it('routes an unknown deep link to the 404 skeleton', () => {
-    renderPath('/app/nested/not-real');
+    renderPath('/ui/nested/not-real');
     screen.getByRole('heading', { name: /404/i });
   });
 
   it('toggles the EUI color mode control', async () => {
     const user = userEvent.setup();
-    renderPath('/app/');
+    renderPath('/ui/');
     await user.click(screen.getByRole('button', { name: /Switch to dark mode/i }));
     screen.getByRole('button', { name: /Switch to light mode/i });
   });

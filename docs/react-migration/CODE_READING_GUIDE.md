@@ -6,7 +6,10 @@ G1 architecture decisions were supplied by the user on 2026-08-21. This guide no
 
 - React 18, EUI/Borealis, Vite, React Router, strict TypeScript, Vitest and Testing Library remain the foundation.
 - WP-03 adds `@playwright/test` and `@axe-core/playwright` plus local scripts for E2E and accessibility.
-- A trustworthy `package-lock.json` is still absent in the current repository because the earlier environment could not reach npm. Do not describe Playwright as executed until a real install succeeds.
+- The earlier npm registry failure is historical. A real `package-lock.json`
+  now exists and `npm ci` has succeeded. The non-browser `npm run verify` gate
+  also passes; see the verification report for exact coverage and build output.
+  Playwright/axe and Human QoS retain separate pending states.
 
 ## 2. `frontend/src/main.tsx`
 
@@ -46,7 +49,12 @@ G1 accepted `${BASE_URL}ui/` as the React prefix. Examples:
 /ui/<unknown> → React 404
 ```
 
-The legacy PHP routes remain unchanged. Production Apache fallback for `/ui/*` is deliberately not implemented in WP-03 because root `.htaccess` also protects long-lived auth/callback/CSAT/QR contracts and needs a separate reviewed change.
+The legacy PHP routes remain unchanged. Production Apache fallback for `/ui/*`
+is deliberately not implemented or verified because root `.htaccess` also
+protects long-lived auth/callback/CSAT/QR contracts and needs a separate reviewed
+change. The local `preview:test` server validates `/ui/` asset MIME types and SPA
+deep-link fallback for the built artifact, but it does not validate Apache
+refresh or rewrite behavior.
 
 ## 5. Runtime config defaults
 
@@ -143,10 +151,22 @@ Playwright is the primary browser framework; Selenium is fallback only. The init
 
 ## 13. Recommended first vertical slice
 
-Calendar is the recommended first post-security vertical slice. It is intentionally not implemented in WP-03. It should begin only after the BFF/session/CSRF/tenant/capability contracts are reviewed and approved.
+Calendar remains the accepted first-post-security recommendation from D-018,
+but it conflicts with the original master-plan placement of Watchtower in WP-08
+and Calendar in WP-24. WP-04 and WP-05 are unaffected. All Calendar, Watchtower,
+Tickets, and other pilot work is frozen until G2 records and applies one coherent
+package schedule.
 
 ## 14. G1 result and current stop
 
-Accepted G1 architecture decisions are recorded in `ADR-001-g1-architecture-decisions.md` and `progress/DECISION_LOG.md`.
+Accepted G1 architecture decisions are recorded in
+`ADR-001-g1-architecture-decisions.md` and `progress/DECISION_LOG.md`.
 
-WP-03 may document and adjust the foundation, but **must not start BFF implementation**. Dependency-backed verification remains blocked until npm/lockfile access is restored.
+The dependency-install blocker and all non-browser automated gates are resolved.
+Playwright/axe browser execution, user Human QoS, and owner/legal EUI-term
+acceptance remain explicit closure items. WP-04/05 may begin only after the
+current verification-closure result permits it, and feature pilots remain frozen
+through G2 replanning.
+
+No GitHub Actions workflow or pull request is part of this work. Go/go-zero and
+cluster implementation remain future-only.

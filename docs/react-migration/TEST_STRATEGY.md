@@ -60,18 +60,35 @@ Important gates still require the user to exercise the product. Human QoS evalua
 
 ## Local commands
 
-After a trustworthy lockfile is generated and dependencies are installed:
+With the reviewed project lockfile and dependencies installed:
 
 ```bash
 cd frontend
 npm ci
+npm run verify
 npx playwright install
 npm run test:e2e
 npm run test:a11y
 ```
 
-No GitHub Actions workflow is created or required. Test reports remain local artifacts unless a later non-Actions reporting mechanism is explicitly approved.
+No GitHub Actions workflow is created or required. No pull request is required
+for this local verification work. Test reports remain local artifacts unless a
+later non-Actions reporting mechanism is explicitly approved.
 
 ## Current verification status
 
-The Playwright and axe test files are authored in WP-03, but they are **not reported as executed** because the existing npm registry/lockfile blocker from WP-02 remains unresolved in the current execution environment.
+The historical WP-02 npm registry failure is retained in its evidence files. A
+real `frontend/package-lock.json` has been generated and `npm ci` succeeds. The
+final non-browser `npm run verify` command also succeeds: structure/isolation,
+lockfile, strict typecheck, lint, 43 tests with coverage thresholds, production
+build, and `verify:preview` all pass.
+
+Playwright browser installation failed before browser execution because the
+external download returned invalid/truncated archives and a proxy certificate
+502. Consequently the 18 Chromium/Firefox/WebKit cases, including axe, are
+**not passed or failed assertions**; they are blocked at browser launch. Human
+QoS is also pending. The local `preview:test` harness proves built `/ui/` asset
+delivery and SPA fallback only; it is not production Apache rewrite evidence.
+
+Go/go-zero and clustered deployment are future architecture concerns, not test
+targets in the current work package.

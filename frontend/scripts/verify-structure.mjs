@@ -6,7 +6,8 @@ const required = [
   'tsconfig.app.json', 'src/main.tsx', 'src/app/App.tsx',
   'src/app/router.tsx', 'src/app/providers/AppProviders.tsx',
   'src/config/runtimeConfig.ts', 'src/api/client.ts',
-  'src/layouts/AppShell.tsx', 'tests/runtimeConfig.test.ts', 'tests/App.test.tsx'
+  'src/layouts/AppShell.tsx', 'tests/runtimeConfig.test.ts', 'tests/App.test.tsx',
+  'scripts/serve-dist.mjs', 'scripts/verify-preview.mjs'
 ];
 for (const path of required) await access(path, constants.R_OK);
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));

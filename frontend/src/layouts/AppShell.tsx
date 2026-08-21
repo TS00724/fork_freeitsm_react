@@ -28,7 +28,7 @@ export function AppShell() {
     <>
       <EuiHeader role="banner">
         <EuiHeaderSection grow={false}>
-          <EuiHeaderSectionItem border="right">
+          <EuiHeaderSectionItem>
             <EuiTitle size="xs"><h1>FreeITSM React/EUI</h1></EuiTitle>
           </EuiHeaderSectionItem>
         </EuiHeaderSection>

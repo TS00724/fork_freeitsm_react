@@ -11,7 +11,11 @@ export function NotFoundPage() {
         iconType="search"
         title={<h2>404 — Route not found</h2>}
         body={<p>The foundation router reached its explicit wildcard route.</p>}
-        actions={<EuiButton onClick={() => navigate('/')}>Return to foundation</EuiButton>}
+        actions={(
+          <EuiButton onClick={() => { void navigate('/'); }}>
+            Return to foundation
+          </EuiButton>
+        )}
       />
     </>
   );

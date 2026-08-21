@@ -22,11 +22,54 @@
       // a server falls back to this document for a nested BrowserRouter route.
       (function installRuntimeBase() {
         var config = window.__FREEITSM_RUNTIME_CONFIG__;
-        var baseUrl = '/' + String(config.baseUrl || '/').replace(/^\/+|\/+$/g, '') + '/';
-        if (baseUrl === '//') baseUrl = '/';
-        var appPath = String(config.appPath || 'ui/').replace(/^\/+|\/+$/g, '');
+        var controlOrBackslash = /[\\\u0000-\u001f\u007f]/;
+
+        function safePath(value, fallback, label) {
+          var raw = String(value || fallback).trim();
+          if (
+            controlOrBackslash.test(raw) ||
+            raw.indexOf('?') !== -1 ||
+            raw.indexOf('#') !== -1 ||
+            /^\/\//.test(raw) ||
+            /^[a-z][a-z\d+.-]*:/i.test(raw)
+          ) {
+            throw new Error(label + ' must be a same-origin URL path');
+          }
+
+          raw.split('/').forEach(function rejectDotSegment(segment) {
+            var decoded = segment;
+            for (var pass = 0; pass < 3; pass += 1) {
+              var next;
+              try {
+                next = decodeURIComponent(decoded);
+              } catch (_error) {
+                throw new Error(label + ' contains invalid URL encoding');
+              }
+              if (next === decoded) break;
+              decoded = next;
+            }
+            if (decoded === '.' || decoded === '..' || /[\\/]/.test(decoded)) {
+              throw new Error(label + ' must not contain path traversal');
+            }
+          });
+          return raw;
+        }
+
+        var basePath = safePath(config.baseUrl, '/', 'baseUrl');
+        var baseUrl = new URL(basePath, window.location.origin + '/');
+        if (baseUrl.origin !== window.location.origin) {
+          throw new Error('baseUrl must remain same-origin');
+        }
+        baseUrl.pathname = baseUrl.pathname.replace(/\/+$/, '') + '/';
+
+        var appPath = safePath(config.appPath, 'ui/', 'appPath').replace(/^\/+|\/+$/g, '');
+        var appUrl = new URL(appPath ? appPath + '/' : './', baseUrl);
+        if (!appUrl.pathname.startsWith(baseUrl.pathname)) {
+          throw new Error('appPath must remain below baseUrl');
+        }
+
         var base = document.createElement('base');
-        base.href = baseUrl + (appPath ? appPath + '/' : '');
+        base.href = appUrl.href;
         document.head.appendChild(base);
       })();
     </script>

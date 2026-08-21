@@ -7,7 +7,7 @@ export interface PermissionBoundaryState {
 
 const unresolvedPermissions: PermissionBoundaryState = {
   status: 'unresolved',
-  hasCapability: (_capability) => false
+  hasCapability: () => false
 };
 const PermissionContext = createContext<PermissionBoundaryState | null>(null);
 
