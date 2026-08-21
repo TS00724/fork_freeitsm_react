@@ -23,3 +23,21 @@ Push permission: true
 Publication policy: re-read main; update only if it still equals start/parent; force=false.
 Pull requests: none
 GitHub Actions: not used; .github/workflows absent
+
+Closure addendum — 2026-08-21
+
+The earlier connector limitation is resolved for the current work period. The
+following literal commands were run in a real target checkout:
+
+git status --short
+  exit 0; empty immediately after source commit 46c901597557abe7f319a880c9a3539105307196
+git branch --show-current
+  agent/g1-verification-closure
+git rev-parse HEAD
+  46c901597557abe7f319a880c9a3539105307196
+git remote -v
+  origin https://github.com/TS00724/fork_freeitsm_react.git (fetch)
+  origin https://github.com/TS00724/fork_freeitsm_react.git (push)
+
+No upstream remote is configured. No pull request or GitHub Actions workflow was
+created. This closes the missing-local-worktree evidence item carried by WP-01.

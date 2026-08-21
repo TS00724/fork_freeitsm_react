@@ -117,3 +117,17 @@ or any business module in WP-02.
 ## Actions confirmation
 
 No GitHub Actions workflow was created, modified, executed, or used for evidence.
+
+## 2026-08-21 closure addendum
+
+The historical no-checkout and npm blockers above are preserved as baseline
+evidence, not current state. A real checkout is now available and was clean at
+source commit `46c901597557abe7f319a880c9a3539105307196`; its only configured remote
+is the user's fork origin. `frontend/package-lock.json` now exists, `npm ci`
+succeeds, and the non-browser local verification gate passes. Current scale
+counts were not recomputed because this closure changed only the isolated
+frontend and migration-control documents.
+
+Still separate from this inventory: Playwright/axe browser execution, Human
+QoS, EUI/Elastic license acceptance, and production Apache `/ui/*` fallback.
+No PHP, BFF, business feature, workflow, or pull request was added.

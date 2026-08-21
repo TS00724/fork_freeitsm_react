@@ -13,9 +13,9 @@ Effective progress is the minimum of Implementation, API/Contract, Verification,
 
 | Metric | Value |
 |---|---:|
-| Verified work packages | 0 / 37 |
-| Current package | WP-03 architecture walkthrough / ADRs |
-| G1 | **Approved by user on 2026-08-21** |
+| Verified work packages | 1 / 37 |
+| Current package | WP-03 G1 verification closure |
+| G1 | **Architecture approved; closure conditional on browser/Human/license items** |
 | Next mandatory gate | G2 after WP-05; not entered in this work period |
 | GitHub Actions | Not used |
 | Pull requests | None |
@@ -25,9 +25,9 @@ Effective progress is the minimum of Implementation, API/Contract, Verification,
 
 | WP | Phase | Scope | Status | Impl % | API % | Verify % | Docs % | Effective % | Confidence | Gate / next stop |
 |---|---|---|---|---:|---:|---:|---:|---:|---|---|
-| WP-01 | P00 | Baseline, inventory, route/API matrix and control files | In progress | 100 | 100 | 90 | 100 | 90 | No | Literal target worktree/status remains unavailable |
-| WP-02 | P01 | Isolated React 18/TS/EUI/Vite scaffold | Blocked | 95 | 100 | 35 | 100 | 35 | No | npm/lockfile dependency verification remains blocked |
-| WP-03 | P02 | User architecture walkthrough, G1 decisions, ADRs and E2E strategy | In progress | 95 | 100 | 45 | 100 | 45 | No | Playwright/axe authored but not executable until npm/lockfile blocker is cleared; **do not start BFF in this work period** |
+| WP-01 | P00 | Baseline, inventory, route/API matrix and control files | Verified complete | 100 | 100 | 100 | 100 | 100 | Yes | Local checkout/remotes/status evidence closed at source SHA `46c9015` |
+| WP-02 | P01 | Isolated React 18/TS/EUI/Vite scaffold | Closure pending | 100 | 100 | 85 | 100 | 85 | No | Non-browser gate passes; Playwright/axe, Human QoS and EUI-term acceptance remain |
+| WP-03 | P02 | User architecture walkthrough, G1 decisions, ADRs and E2E strategy | G1 approved; closure pending | 100 | 100 | 75 | 100 | 75 | No | Browser binaries unavailable; run 18 Playwright/axe cases, Human QoS, and license decision before final closure |
 | WP-04 | P03 | `/api/ui/v1` BFF front controller and contracts | Not started | 0 | 0 | 0 | 0 | 0 | No | Not started |
 | WP-05 | P03 | Session, CSRF, tenant, RBAC and object scope | Not started | 0 | 0 | 0 | 0 | 0 | No | Not started; G2 later |
 | WP-06 | P04 | AppShell, routing, theme and i18n | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
@@ -80,4 +80,15 @@ Effective progress is the minimum of Implementation, API/Contract, Verification,
 
 ## Current stop
 
-WP-03 documentation and test scaffolding are being completed. The existing npm registry/lockfile blocker prevents dependency-backed verification. **No BFF, Session/CSRF/RBAC server implementation, Watchtower, Tickets or other business module has started.**
+WP-01 is verified complete. WP-02/WP-03 non-browser automation is green at
+source SHA `46c901597557abe7f319a880c9a3539105307196`: reproducible install, zero
+currently reported lockfile vulnerabilities, typecheck, lint, 43 tests,
+coverage, production build, and `/ui/` asset/deep-link preview probe all pass.
+
+Do not call WP-02/WP-03 `Verified complete` yet. Playwright/axe is blocked before
+browser launch by external binary-download failures; user Human QoS and explicit
+EUI/Elastic term acceptance are pending. Apache fallback is intentionally a
+separate later change. **No BFF, Session/CSRF/RBAC server implementation,
+Calendar, Watchtower, Tickets, or other business module has started.**
+
+Resume from `progress/G1_CLOSURE_CHECKLIST.md`; do not repeat WP-01/WP-02 setup.
