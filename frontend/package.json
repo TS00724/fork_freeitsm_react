@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": "^20.19.0 || ^22.13.0 || >=24.0.0" },
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
+  },
   "packageManager": "npm@11.9.0",
   "scripts": {
     "dev": "vite",
@@ -18,11 +20,13 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:a11y": "playwright test e2e/a11y.spec.ts",
+    "contracts:generate": "node scripts/generate-ui-contract.mjs",
+    "contracts:check": "node scripts/generate-ui-contract.mjs --check",
     "verify:structure": "node scripts/verify-structure.mjs",
     "verify:isolation": "node scripts/verify-isolation.mjs",
     "verify:lockfile": "node scripts/verify-lockfile.mjs",
     "verify:preview": "node scripts/verify-preview.mjs",
-    "verify": "npm run verify:structure && npm run verify:isolation && npm run verify:lockfile && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run verify:preview"
+    "verify": "npm run verify:structure && npm run verify:isolation && npm run verify:lockfile && npm run contracts:check && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run verify:preview"
   },
   "dependencies": {
     "@elastic/datemath": "5.0.3",
