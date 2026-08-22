@@ -1,0 +1,17 @@
+# FreeITSM browser UI API v1 — local rewrite boundary only.
+# Root .htaccess and the existing /api/v1 machine API remain untouched.
+Options -MultiViews -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php/$1 [QSA,L]
+</IfModule>
+
+# The browser UI API is same-origin and intentionally does not emit CORS grants.
+<IfModule mod_headers.c>
+    Header always unset Access-Control-Allow-Origin
+    Header always unset Access-Control-Allow-Credentials
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>
