@@ -1,0 +1,181 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FreeITSM Browser UI API",
+    "version": "1.0.0",
+    "description": "Same-origin browser BFF transport contract. WP-04 defines envelopes and routing only; PHP Session, CSRF, tenant and authorization enforcement are reserved for WP-05."
+  },
+  "servers": [{ "url": "/api/ui/v1", "description": "Same-origin FreeITSM UI API v1" }],
+  "tags": [{ "name": "foundation", "description": "Transport-only foundation routes" }],
+  "security": [],
+  "x-freeitsm-boundaries": {
+    "browserAuthentication": "php-session-reserved-for-wp-05",
+    "machineApi": "/api/v1 remains a separate Bearer API-key surface",
+    "cors": "same-origin-only; no wildcard CORS",
+    "businessFeatures": "none in WP-04"
+  },
+  "x-freeitsm-status-semantics": {
+    "400": "Malformed path, JSON or request syntax",
+    "401": "No valid PHP Session or an expired Session; implementation reserved for WP-05",
+    "403": "Authenticated actor lacks tenant, capability or object scope; implementation reserved for WP-05",
+    "404": "Unknown endpoint or intentionally hidden object",
+    "405": "Known route with unsupported HTTP method",
+    "409": "Write/version/state conflict",
+    "415": "Unsupported request media type",
+    "422": "Semantically invalid request",
+    "429": "Rate limit exceeded",
+    "500": "Unexpected server error without stack/path/secret disclosure"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["foundation"],
+        "operationId": "getUiApiFoundation",
+        "summary": "Describe the UI API foundation boundary",
+        "responses": {
+          "200": {
+            "description": "Foundation description",
+            "headers": {
+              "X-Request-ID": { "$ref": "#/components/headers/RequestId" },
+              "X-Correlation-ID": { "$ref": "#/components/headers/CorrelationId" },
+              "X-FreeITSM-UI-Api-Version": { "$ref": "#/components/headers/ApiVersion" }
+            },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiRootResponse" } } }
+          },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["foundation"],
+        "operationId": "getUiApiHealth",
+        "summary": "Check only the UI API PHP process",
+        "description": "This route does not claim database, Session or dependency health.",
+        "responses": {
+          "200": {
+            "description": "Process is able to serve the contract",
+            "headers": {
+              "X-Request-ID": { "$ref": "#/components/headers/RequestId" },
+              "X-Correlation-ID": { "$ref": "#/components/headers/CorrelationId" },
+              "X-FreeITSM-UI-Api-Version": { "$ref": "#/components/headers/ApiVersion" }
+            },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiHealthResponse" } } }
+          },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "headers": {
+      "RequestId": { "description": "Validated client request ID or a generated UUID", "schema": { "type": "string", "maxLength": 128 } },
+      "CorrelationId": { "description": "Validated correlation ID, defaulting to the request ID", "schema": { "type": "string", "maxLength": 128 } },
+      "ApiVersion": { "description": "UI API envelope version", "schema": { "type": "string", "const": "1" } }
+    },
+    "schemas": {
+      "UiApiMeta": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["apiVersion", "requestId", "correlationId", "timestamp"],
+        "properties": {
+          "apiVersion": { "type": "string", "const": "1" },
+          "requestId": { "type": "string", "maxLength": 128 },
+          "correlationId": { "type": "string", "maxLength": 128 },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UiApiErrorCode": {
+        "type": "string",
+        "enum": ["invalid_method", "invalid_path", "invalid_route_parameter", "invalid_json", "unauthenticated", "forbidden", "not_found", "method_not_allowed", "conflict", "unsupported_media_type", "validation_failed", "rate_limited", "server_error"]
+      },
+      "UiApiError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "$ref": "#/components/schemas/UiApiErrorCode" },
+          "message": { "type": "string" },
+          "details": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "UiApiErrorEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["error", "meta"],
+        "properties": {
+          "error": { "$ref": "#/components/schemas/UiApiError" },
+          "meta": { "$ref": "#/components/schemas/UiApiMeta" }
+        }
+      },
+      "UiApiSecuritySlots": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["actor", "tenant", "capabilities", "locale", "timezone"],
+        "properties": {
+          "actor": { "type": "string", "enum": ["unresolved"] },
+          "tenant": { "type": "string", "enum": ["unresolved"] },
+          "capabilities": { "type": "string", "enum": ["unresolved"] },
+          "locale": { "type": "string", "enum": ["unresolved"] },
+          "timezone": { "type": "string", "enum": ["unresolved"] }
+        }
+      },
+      "UiApiRootData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "version", "surface", "authentication", "routes", "security"],
+        "properties": {
+          "name": { "type": "string", "const": "FreeITSM Browser UI API" },
+          "version": { "type": "string", "const": "v1" },
+          "surface": { "type": "string", "const": "same-origin-browser-bff" },
+          "authentication": { "type": "string", "const": "reserved-for-wp-05" },
+          "routes": { "type": "array", "items": { "type": "string" } },
+          "security": { "$ref": "#/components/schemas/UiApiSecuritySlots" }
+        }
+      },
+      "UiApiHealthChecks": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["database", "session"],
+        "properties": {
+          "database": { "type": "string", "const": "not_checked" },
+          "session": { "type": "string", "const": "not_checked" }
+        }
+      },
+      "UiApiHealthData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status", "scope", "checks"],
+        "properties": {
+          "status": { "type": "string", "const": "ok" },
+          "scope": { "type": "string", "const": "ui-api-process" },
+          "checks": { "$ref": "#/components/schemas/UiApiHealthChecks" }
+        }
+      },
+      "UiApiRootResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data", "meta"],
+        "properties": { "data": { "$ref": "#/components/schemas/UiApiRootData" }, "meta": { "$ref": "#/components/schemas/UiApiMeta" } }
+      },
+      "UiApiHealthResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data", "meta"],
+        "properties": { "data": { "$ref": "#/components/schemas/UiApiHealthData" }, "meta": { "$ref": "#/components/schemas/UiApiMeta" } }
+      }
+    },
+    "responses": {
+      "BadRequest": { "description": "Malformed request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "Unauthorized": { "description": "No valid Session; implementation reserved for WP-05", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "Forbidden": { "description": "Authenticated but not permitted; implementation reserved for WP-05", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "NotFound": { "description": "Unknown endpoint or hidden object", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "MethodNotAllowed": { "description": "Unsupported method for a known route", "headers": { "Allow": { "schema": { "type": "string" } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "Conflict": { "description": "Write/version/state conflict", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "UnsupportedMediaType": { "description": "Unsupported request Content-Type", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "UnprocessableEntity": { "description": "Semantic validation failure", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "TooManyRequests": { "description": "Rate limit exceeded", "headers": { "Retry-After": { "schema": { "type": "integer", "minimum": 0 } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "ServerError": { "description": "Unexpected error without internal detail disclosure", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } }
+    }
+  }
+}
