@@ -1,0 +1,19 @@
+# FreeITSM browser UI API v1 — same-origin front controller.
+# This file is intentionally local to /api/ui/v1. The root .htaccess and the
+# machine API /api/v1 remain unchanged.
+Options -MultiViews -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Never expose implementation/test files directly from the web root.
+    RewriteRule ^(?:lib|tests)(?:/|$) - [R=404,L]
+
+    # The checked-in OpenAPI document is a static contract artefact.
+    RewriteRule ^openapi\.json$ openapi.json [L]
+
+    # Route every non-file/non-directory request to the UI API controller.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php/$1 [QSA,L]
+</IfModule>
