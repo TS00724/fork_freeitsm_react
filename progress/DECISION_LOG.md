@@ -1,40 +1,44 @@
 # FreeITSM React migration decision log
 
+Decisions are append-only. A later change must add a superseding entry rather
+than silently rewriting accepted history.
+
 | ID | Date | Decision | Status | Rationale / consequence |
 |---|---|---|---|---|
 | D-001 | 2026-08-20 | Put all new frontend source in `frontend/`; build to `frontend/dist/` | Accepted | Prevents PHP/TSX mixing and keeps legacy PHP independently runnable |
-| D-002 | 2026-08-20 | Pin React 18.3.1, EUI 119.0.0, Borealis 8.0.0, strict TypeScript and Vite | Provisional; package install review remains | EUI manifest supports React 17/18; no React 19 adoption |
-| D-003 | 2026-08-20 | Use `BrowserRouter` with runtime basename and `${BASE_URL}app/` as proposed prefix | **Superseded by D-010** | Original G1 proposal retained for history |
-| D-004 | 2026-08-20 | Provider order is runtime config → EUI/theme → locale/timezone → auth → tenant → permission → router | Accepted at G1 | Makes cross-cutting boundaries explicit and replaceable |
-| D-005 | 2026-08-20 | Auth, tenant, permission, CSRF, and BFF data remain unresolved placeholders | Accepted scope rule | Avoids inventing contracts before BFF/security work and preserves server authorization responsibility |
-| D-006 | 2026-08-20 | Use a framework-light `fetch` transport placeholder with same-origin credentials and optional CSRF hook | Accepted at G1 | Centralizes browser transport without defining endpoints/envelopes or using public API keys |
-| D-007 | 2026-08-20 | Do not fabricate/copy a package lock when npm registry is unavailable | Accepted integrity rule | Dependency-backed verification remains blocked until a real lockfile/install succeeds |
-| D-008 | 2026-08-20 | EUI licensing/notice acceptance is an owner decision | **Superseded by D-027** | No legal compatibility conclusion was made before owner review |
-| D-009 | 2026-08-20 | Stop after WP-02 at G1 | Satisfied | User supplied G1 architecture decisions on 2026-08-21; WP-03 proceeded, BFF still not started |
-| D-010 | 2026-08-21 | Mount React under `${BASE_URL}ui/` while legacy PHP keeps existing routes | Accepted at G1 | Clear UI namespace; supports strangler migration and future server changes |
-| D-011 | 2026-08-21 | Keep Apache as the current server target; document Nginx as a future deployment target | Accepted at G1 | Existing `.htaccess` owns compatibility routes; avoids combining frontend migration with web-server replacement |
-| D-012 | 2026-08-21 | Model the React AppShell on the PHP information architecture but map responsibilities to EUI patterns | Accepted at G1 | Preserves user familiarity without copying legacy HTML/CSS; unmigrated modules remain legacy links |
-| D-013 | 2026-08-21 | Default the React shell to Light mode | Accepted at G1 | First-run appearance must not silently follow OS dark preference; user preference can override later |
-| D-014 | 2026-08-21 | Future browser auth remains PHP Session; 401 means unauthenticated, 403 means authenticated-but-forbidden; mutating UI requests use session-bound CSRF + SameSite + Origin validation | Direction accepted; exact contract deferred | Uses existing session hardening and fills the documented CSRF gap without mixing browser auth into `/api/v1` |
-| D-015 | 2026-08-21 | Treat future SOC identity as level-1 and FreeITSM identity/tenant/role/capability state as level-2 behind an adapter/context boundary | Accepted at G1 | Allows SOC values to supply/supersede local values later without feature rewrites |
-| D-016 | 2026-08-21 | Minimum React locale set: English, `zh-CN`, `zh-TW`; timezone independently configurable | Accepted at G1 | Locale must not imply timezone; reuse existing language sources where possible |
-| D-017 | 2026-08-21 | Use hybrid API typing: generated transport DTO/enums + handwritten frontend domain/view models | Accepted at G1 | Catches contract drift without coupling UI state directly to server payload shape |
-| D-018 | 2026-08-21 | Recommend Calendar as first post-security vertical slice, then Watchtower, then Tickets | Accepted planning decision | Calendar exercises CRUD/timezone/i18n/permission with less business complexity than Tickets |
-| D-019 | 2026-08-21 | Use Playwright as primary E2E framework; Selenium is fallback only | Accepted at G1 | One framework covers Chromium/Firefox/WebKit, deep links, traces and local automation |
-| D-020 | 2026-08-21 | Gate quality with static checks, coverage, automated accessibility, E2E/security-negative tests and user Human QoS | Accepted at G1; browser timing revised by D-026 | Automated correctness and human usability are both required; no GitHub Actions dependency |
-| D-021 | 2026-08-21 | Accept the generated project `package-lock.json` and successful `npm ci` as resolution of the dependency-install blocker | Accepted; install evidence only | This supersedes only the blocker state in D-002/D-007; it does not claim typecheck, lint, unit, build, Playwright, axe, Apache routing, Human QoS, or EUI legal acceptance |
-| D-022 | 2026-08-21 | Treat Vite dev/preview route checks separately from production Apache `/ui/*` fallback | Accepted verification boundary | Vite can prove the client basename and SPA behavior; Apache fallback remains unimplemented and unverified until a narrowly reviewed server rule is tested |
-| D-023 | 2026-08-21 | Freeze all feature-pilot execution until G2 reconciles D-018 Calendar-first with the historical WP-08 Watchtower / WP-24 Calendar schedule | Accepted planning hold; WP-04/05 unaffected | Avoids silently renumbering work packages or starting Calendar, Watchtower, or Tickets under contradictory plans; G2 must publish one coherent schedule before pilot work |
-| D-024 | 2026-08-21 | Keep verification and the next PHP BFF packages local/manual with no GitHub Actions and no pull request; retain Go/go-zero and clustering as future-only | Accepted scope boundary | Prevents accidental upstream workflow/PR activity and avoids implementing the deferred backend vision during the PHP/React migration |
-| D-025 | 2026-08-21 | Use `preview:test` as a local `/ui/` static-mount verification harness, while keeping Apache fallback as a separate future change | Accepted engineering correction | Vite preview served HTML for `/ui/assets/*`; the dedicated harness now verifies asset MIME and SPA fallback without editing PHP or pretending to validate Apache |
-| D-026 | 2026-08-22 | Defer the pinned Playwright Chromium/Firefox/WebKit + axe rerun to a later Codex/script-enabled environment and remove it as a G1 closure blocker | Accepted owner gate revision | Browser tests remain **not passed** and must be executed later with real commands/evidence; deferment must never be rewritten as a pass |
-| D-027 | 2026-08-22 | Accept the current EUI/Elastic dependency terms for continued project development, preserving required LICENSE/NOTICE material | Accepted by project owner | Current acceptance does not relicense dependencies or waive release-time review; managed-service/distribution plans require renewed review |
-| D-028 | 2026-08-22 | Record G1 Human QoS as Pass for AppShell/`/ui/`, theme/interaction foundation and provider/code maintainability | Accepted by project owner | A/B/D are accepted; bundle performance is accepted only with the mandatory lazy/code-splitting constraint in D-029 |
-| D-029 | 2026-08-22 | Make route/feature/component lazy loading and code splitting a platform requirement | Accepted at G1 closure | Business routes default to dynamic import/lazy loading; AppShell synchronously loads only startup-critical platform code; heavy EUI/Prism/DataGrid/chart/editor/mapper dependencies should not accumulate into the initial shell chunk; add bundle analyzer/treemap evidence later |
-| D-030 | 2026-08-22 | Close G1 and allow a future work period to begin WP-04 from the merged closure commit | Accepted | WP-02/WP-03 are closed under the revised owner-approved gate; no BFF or business feature starts in the closure work period itself |
-
-Decisions may be revised only with an explicit follow-up entry; do not silently rewrite accepted history.
-The blocker wording retained in D-007 is historical after D-021; it remains in
-the table only to preserve the original decision record. Browser automation
-remains deferred verification debt after D-026 and must not be described as
-passed until a later real execution succeeds.
+| D-002 | 2026-08-20 | Pin React 18.3.1, EUI 119.0.0, Borealis 8.0.0, strict TypeScript and Vite | Accepted after lock/install review | No React 19 adoption |
+| D-003 | 2026-08-20 | Use `BrowserRouter` and proposed `${BASE_URL}app/` prefix | Superseded by D-010 | Historical proposal |
+| D-004 | 2026-08-20 | Provider order: runtime config → theme → locale/timezone → auth → tenant → permission → router | Accepted at G1 | Explicit replaceable boundaries |
+| D-005 | 2026-08-20 | Auth, tenant, permission, CSRF and BFF data remain unresolved placeholders before security work | Accepted | Prevents invented contracts |
+| D-006 | 2026-08-20 | Use a framework-light same-origin `fetch` transport placeholder | Accepted | No public API key or endpoint assumptions |
+| D-007 | 2026-08-20 | Do not fabricate/copy a lockfile when registry access is unavailable | Accepted integrity rule; blocker later resolved | Preserves reproducibility |
+| D-008 | 2026-08-20 | EUI licensing/notice acceptance is an owner decision | Accepted at G1 with notice obligations | Engineering review is not legal advice |
+| D-009 | 2026-08-20 | Stop after WP-02 at G1 | Satisfied | G1 was reviewed and closed before BFF work |
+| D-010 | 2026-08-21 | Mount React under `${BASE_URL}ui/`; legacy PHP keeps existing routes | Accepted | Clear strangler namespace |
+| D-011 | 2026-08-21 | Apache is current; Nginx is future-compatible | Accepted | Avoids coupling UI migration to web-server replacement |
+| D-012 | 2026-08-21 | Map PHP information architecture to EUI patterns | Accepted | Familiar shell without copying legacy HTML/CSS |
+| D-013 | 2026-08-21 | Default React shell to Light | Accepted | Stable first-run appearance |
+| D-014 | 2026-08-21 | Future browser auth uses PHP Session; 401/403 are distinct; writes use Session-bound CSRF + SameSite + Origin | Direction accepted; implementation WP-05 | Keeps browser auth separate from `/api/v1` |
+| D-015 | 2026-08-21 | SOC level-1 identity maps through an adapter to FreeITSM level-2 context | Accepted | Future identity replacement without feature rewrites |
+| D-016 | 2026-08-21 | Minimum locales: `en`, `zh-CN`, `zh-TW`; timezone independent | Accepted | Locale never implies timezone |
+| D-017 | 2026-08-21 | Generated transport DTO/enums + handwritten frontend models | Accepted | Detects drift without coupling UI state to payloads |
+| D-018 | 2026-08-21 | Recommend Calendar, then Watchtower, then Tickets after security foundation | Accepted planning decision | Feature execution remains frozen until G2 schedule reconciliation |
+| D-019 | 2026-08-21 | Playwright primary E2E; Selenium fallback only | Accepted | Chromium/Firefox/WebKit, traces and deep links in one stack |
+| D-020 | 2026-08-21 | Quality gate: static, coverage, a11y, E2E/security negatives and Human QoS | Accepted | Automated and human quality both matter |
+| D-021 | 2026-08-21 | Accept real lockfile and successful `npm ci` as dependency blocker closure | Accepted | Does not imply browser automation passed |
+| D-022 | 2026-08-21 | Vite preview checks are separate from production Apache `/ui/*` fallback | Accepted | Prevents false Apache claims |
+| D-023 | 2026-08-21 | Freeze feature pilots until G2 resolves work-package order | Accepted | WP-04/05 unaffected |
+| D-024 | 2026-08-21 | Local/manual verification only; no Actions, PR, Go/go-zero or clustering | Accepted | Repository and scope safety |
+| D-025 | 2026-08-21 | Use `preview:test` only as a local static-mount harness | Accepted | Tests asset MIME/deep link without editing Apache root rules |
+| D-026 | 2026-08-22 | Human QoS accepts `/ui/`, shell, Light/theme, provider structure and code readability | Accepted; G1 | Owner result `Pass` |
+| D-027 | 2026-08-22 | EUI/Elastic terms accepted with LICENSE/NOTICE retention and future managed-service review | Accepted; G1 | Does not relicense third-party code |
+| D-028 | 2026-08-22 | Defer Playwright/axe execution to a later Codex/script-capable environment without calling it Passed | Accepted verification debt | Owner explicitly removed it as a G1 blocker; debt remains visible |
+| D-029 | 2026-08-22 | All future business routes default to lazy/dynamic imports; heavy components are feature/component chunks | Mandatory platform rule | Current 510.78 kB gzip chunk is not a future baseline |
+| D-030 | 2026-08-22 | Close G1 and allow WP-04 only; stop again before WP-05 | Accepted | Preserves a separate security review |
+| D-031 | 2026-08-22 | Create `/api/ui/v1` as a same-origin browser surface independent from Bearer `/api/v1` | Accepted WP-04 | No wildcard CORS, browser API key or machine bootstrap |
+| D-032 | 2026-08-22 | Use one versioned success/error envelope with API version, request ID, correlation ID and UTC timestamp | Accepted WP-04 | Uniform transport and diagnostics |
+| D-033 | 2026-08-22 | Validate incoming request/correlation IDs; generate UUID request IDs and default correlation to request ID | Accepted WP-04 | Prevents header injection while supporting trace propagation |
+| D-034 | 2026-08-22 | Strictly reject unsafe paths, malformed/non-object JSON, unsupported media types and invalid typed route parameters | Accepted WP-04 | Fail-closed request boundary before business handlers |
+| D-035 | 2026-08-22 | OpenAPI 3.1 is the UI transport source; dependency-free generation produces TypeScript DTOs/enums | Accepted WP-04 | Generated transport types remain separate from frontend domain/view models |
+| D-036 | 2026-08-22 | WP-04 exposes only foundation and process-health routes; Session, CSRF, tenant, capability and DB binding remain unresolved | Accepted stop boundary | Prevents premature WP-05/security claims |
+| D-037 | 2026-08-22 | Root `.htaccess`, PHP UI and existing `/api/v1` remain untouched; only a local UI API rewrite file is allowed | Accepted WP-04 | Limits regression surface |
