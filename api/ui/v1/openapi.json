@@ -1,0 +1,270 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FreeITSM Browser UI API",
+    "version": "1.0.0",
+    "description": "WP-04 contract foundation for the same-origin browser BFF. Session, CSRF, tenant, capability and object-scope enforcement are deferred to WP-05."
+  },
+  "servers": [{ "url": "/api/ui/v1" }],
+  "x-freeitsm-boundaries": {
+    "browserAuthentication": "planned PHP server-side Session in WP-05",
+    "csrf": "planned session-bound synchronizer token + SameSite + Origin validation in WP-05",
+    "machineApi": "/api/v1 remains a separate Bearer API-key API",
+    "cors": "same-origin only; no wildcard credentialed CORS"
+  },
+  "x-freeitsm-http-semantics": {
+    "400": "Malformed request, JSON, identifier or route parameter",
+    "401": "No valid authenticated session or session expired",
+    "403": "Authenticated but forbidden by capability, tenant or object scope",
+    "404": "Endpoint or resource not found",
+    "405": "HTTP method not supported for the matched path",
+    "409": "Version or write conflict",
+    "413": "Payload exceeds the endpoint limit",
+    "415": "Unsupported request Content-Type",
+    "422": "Semantically invalid request",
+    "429": "Rate limited",
+    "500": "Unexpected server error with no implementation detail leakage"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "uiApiIndex",
+        "summary": "Describe the UI API contract foundation",
+        "tags": ["Foundation"],
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/CorrelationId" }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "UI API index",
+            "headers": {
+              "X-Request-ID": { "$ref": "#/components/headers/RequestId" },
+              "X-Correlation-ID": { "$ref": "#/components/headers/CorrelationId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UiApiIndexResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "405": { "$ref": "#/components/responses/MethodNotAllowed" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "uiApiHealth",
+        "summary": "Process-local liveness without database or session access",
+        "tags": ["Foundation"],
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/CorrelationId" }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "UI API process is alive",
+            "headers": {
+              "X-Request-ID": { "$ref": "#/components/headers/RequestId" },
+              "X-Correlation-ID": { "$ref": "#/components/headers/CorrelationId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UiApiHealthResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "405": { "$ref": "#/components/responses/MethodNotAllowed" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "RequestId": {
+        "name": "X-Request-ID",
+        "in": "header",
+        "required": false,
+        "description": "Caller-supplied request ID. The server validates or generates it and echoes it in the response.",
+        "schema": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        }
+      },
+      "CorrelationId": {
+        "name": "X-Correlation-ID",
+        "in": "header",
+        "required": false,
+        "description": "Caller-supplied correlation ID. When absent, the request ID is used.",
+        "schema": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        }
+      }
+    },
+    "headers": {
+      "RequestId": {
+        "description": "Unique identifier for this HTTP request",
+        "schema": { "type": "string", "maxLength": 128 }
+      },
+      "CorrelationId": {
+        "description": "Identifier propagated across related operations",
+        "schema": { "type": "string", "maxLength": 128 }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Malformed request",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      },
+      "Unauthorized": {
+        "description": "No valid session",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      },
+      "Forbidden": {
+        "description": "Authenticated but forbidden",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      },
+      "NotFound": {
+        "description": "Not found",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      },
+      "MethodNotAllowed": {
+        "description": "Method not allowed",
+        "headers": { "Allow": { "schema": { "type": "string" } } },
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      },
+      "Conflict": {
+        "description": "Conflict",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      },
+      "PayloadTooLarge": {
+        "description": "Payload too large",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      },
+      "UnsupportedMediaType": {
+        "description": "Unsupported media type",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      },
+      "ValidationFailed": {
+        "description": "Validation failed",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      },
+      "RateLimited": {
+        "description": "Rate limited",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      },
+      "ServerError": {
+        "description": "Unexpected server error",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorResponse" } } }
+      }
+    },
+    "schemas": {
+      "UiApiErrorCode": {
+        "type": "string",
+        "enum": [
+          "bad_request",
+          "invalid_json",
+          "invalid_request_id",
+          "invalid_route_parameter",
+          "payload_too_large",
+          "unauthenticated",
+          "forbidden",
+          "not_found",
+          "method_not_allowed",
+          "conflict",
+          "unsupported_media_type",
+          "validation_failed",
+          "rate_limited",
+          "server_error"
+        ]
+      },
+      "UiApiResponseMeta": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["apiVersion", "requestId", "correlationId", "timestamp"],
+        "properties": {
+          "apiVersion": { "type": "string", "const": "1" },
+          "requestId": { "type": "string" },
+          "correlationId": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UiApiError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "$ref": "#/components/schemas/UiApiErrorCode" },
+          "message": { "type": "string" },
+          "details": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "UiApiErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["error", "meta"],
+        "properties": {
+          "error": { "$ref": "#/components/schemas/UiApiError" },
+          "meta": { "$ref": "#/components/schemas/UiApiResponseMeta" }
+        }
+      },
+      "UiApiIndexData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "version",
+          "stage",
+          "openapi",
+          "routes",
+          "securityBoundary",
+          "machineApiBoundary"
+        ],
+        "properties": {
+          "name": { "type": "string", "const": "FreeITSM UI API" },
+          "version": { "type": "string", "const": "1" },
+          "stage": { "type": "string" },
+          "openapi": { "type": "string" },
+          "routes": { "type": "array", "items": { "type": "string" } },
+          "securityBoundary": { "type": "string" },
+          "machineApiBoundary": { "type": "string" }
+        }
+      },
+      "UiApiHealthData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status", "service", "version"],
+        "properties": {
+          "status": { "type": "string", "const": "ok" },
+          "service": { "type": "string", "const": "freeitsm-ui-api" },
+          "version": { "type": "string", "const": "1" }
+        }
+      },
+      "UiApiIndexResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data", "meta"],
+        "properties": {
+          "data": { "$ref": "#/components/schemas/UiApiIndexData" },
+          "meta": { "$ref": "#/components/schemas/UiApiResponseMeta" }
+        }
+      },
+      "UiApiHealthResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data", "meta"],
+        "properties": {
+          "data": { "$ref": "#/components/schemas/UiApiHealthData" },
+          "meta": { "$ref": "#/components/schemas/UiApiResponseMeta" }
+        }
+      }
+    }
+  }
+}
