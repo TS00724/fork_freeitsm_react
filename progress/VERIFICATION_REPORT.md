@@ -2,165 +2,117 @@
 
 - Report date: 2026-08-22
 - Repository: `TS00724/fork_freeitsm_react`
-- Original verification branch: `agent/g1-verification-closure`
-- G1 closure baseline: `132d77e2e7ea88910bee3fa45819ac7e18c635ec`
-- Verified implementation source: `46c901597557abe7f319a880c9a3539105307196`
-- Final G1 status: **Closed by explicit owner decision**
+- WP-04 start SHA: `0bf3eb1516eae4be56689e22fa263c8d89e44821`
+- Scope: WP-04 `/api/ui/v1` front controller and contracts only
 
 ## Outcome
 
-G1 architecture and G1 Human QoS are approved. The dependency blocker and all
-non-browser engineering gates are closed. WP-01, WP-02 and WP-03 are now
-`Verified complete` for their G1 scope under the owner-approved closure policy.
+WP-04 is `Verified complete`: implementation, API/contract, verification and
+documentation are 100%, Confidence Yes. This result covers the transport and
+contract foundation only. It does **not** claim that PHP Session, CSRF, tenant,
+RBAC, capability or object-scope enforcement is implemented; that work remains
+WP-05.
 
-The owner explicitly revised one gate on 2026-08-22: the pinned Playwright
-Chromium/Firefox/WebKit + axe rerun is deferred to a later Codex/script-enabled
-environment and is no longer a G1 closure blocker. It remains **not passed** and
-must not be reported as successful until real browser execution completes.
+No business feature, database access, root `.htaccess` edit, GitHub Actions
+workflow, Pull Request, upstream write, Go/go-zero or SOC runtime was created.
 
-No PHP UI-BFF, server auth/CSRF/RBAC implementation, Apache rule, business
-feature, GitHub Actions workflow, pull request, Go/go-zero runtime or SOC cluster
-implementation was created in this closure work.
-
-## Repository and scope evidence
+## Repository boundary
 
 | Check | Result |
 |---|---|
-| G1 closure baseline | `132d77e2e7ea88910bee3fa45819ac7e18c635ec` |
-| Literal target checkout/status from earlier closure | Pass; clean after implementation source commit `46c9015` |
-| Configured Git remote from earlier closure | Only `origin=https://github.com/TS00724/fork_freeitsm_react.git` for fetch/push |
-| Upstream remote / force push / PR | None |
-| `.github/workflows` | Absent / not used |
-| Frontend isolation | Pass; no PHP, BFF, or business feature below `frontend/` |
-| Go/go-zero / clustering | Not implemented; future-only |
+| Required base | `main` was `0bf3eb1516eae4be56689e22fa263c8d89e44821` before work |
+| Repository | Only `TS00724/fork_freeitsm_react` |
+| Remote/upstream | User fork only; no upstream remote or write |
+| Pull Request / force push | None |
+| `.github/workflows` | Absent and not used |
+| Root `.htaccess` | Unchanged |
+| Existing `/api/v1` | Unchanged Bearer machine surface |
+| PHP UI / business modules | Unchanged |
 
-A later G1 runtime attempt on 2026-08-22 could not materialize a fresh clone
-because the execution environment could not resolve GitHub/npm/Playwright hosts.
-That blocked attempt is preserved separately and is not presented as repository
-failure or browser success.
+## Delivered routes
 
-## Dependency and license evidence
+```text
+GET|HEAD|OPTIONS /api/ui/v1/
+GET|HEAD|OPTIONS /api/ui/v1/health
+```
 
-| Check | Result |
-|---|---|
-| Lockfile | Real npm lockfile v3 generated and committed |
-| Clean install | Earlier verified `npm ci` exit 0; 464 packages installed |
-| React/EUI peer graph | React 18.3.1, EUI 119.0.0, Borealis 8.0.0 and required peers resolve compatibly |
-| PrismJS advisory | Explicit override resolves PrismJS 1.30.0; no incompatible EUI downgrade accepted |
-| Production audit | Exit 0; 0 vulnerabilities reported at the 2026-08-21 snapshot |
-| Complete lockfile audit | Exit 0; 0 vulnerabilities reported across 514 dependency entries at the snapshot |
-| EUI/theme license | **Accepted by project owner on 2026-08-22** |
+`/api/ui/v1/openapi.json` is a static OpenAPI 3.1 source. Any other executable
+path is dispatched through the single `api/ui/v1/index.php` front controller and
+returns the common JSON 404 or 405 envelope.
 
-Owner acceptance requires applicable third-party LICENSE/NOTICE material to be
-preserved. If the deployment model later becomes distributed or a managed
-service, the EUI/Elastic terms must be reviewed again. This is a project decision,
-not legal advice and not a relicensing of Elastic dependencies under MIT.
+## Command evidence
 
-## Final non-browser quality gate
+The final release-branch archive was materialized into a clean local verification
+directory before the following commands were executed. Complete output is
+summarized in `progress/verification/WP-04-command-results.md`.
 
-The final recorded `npm run verify` against the reviewed implementation source
-exited **0**.
+| Command | Exit | Result |
+|---|---:|---|
+| `find api/ui/v1 -name '*.php' -print0 \| xargs -0 -n1 php -l` | 0 | All 7 WP-04 PHP files have valid syntax |
+| `php api/ui/v1/tests/run.php` | 0 | 36 contract, routing and security-negative tests; 0 failures |
+| OpenAPI JSON decode/version assertion | 0 | Valid JSON; OpenAPI `3.1.0`; required status semantics present |
+| `node frontend/scripts/generate-ui-contract.mjs --check` | 0 | Committed TypeScript exactly matches OpenAPI schemas |
+| `node --check frontend/scripts/generate-ui-contract.mjs` | 0 | Generator syntax valid |
+| `cd frontend && npm ci --ignore-scripts` | 0 | Reproducible lockfile install; no package manifest drift |
+| `cd frontend && npm run verify` | 0 | Structure, isolation, lockfile, contract drift, typecheck, lint, 43 tests/coverage, build and `/ui/` preview probe passed |
+| UI API forbidden-scope scan | 0 | No Session start, machine Authorization/Bearer handling, DB config include or business route |
+| `.github/workflows` absence check | 0 | No workflow directory |
 
-| Gate | Result |
-|---|---|
-| Structure | Pass; 16 required files |
-| PHP/React isolation | Pass |
-| Lockfile check | Pass |
-| Strict TypeScript | Pass, including E2E project reference |
-| ESLint | Pass with zero warnings/errors |
-| Unit/component/security tests | 3 files / 43 tests passed |
-| Coverage | Statements 84.01%, branches 78.53%, functions 84.84%, lines 87.83%; all thresholds passed |
-| Production build | Pass; 2,730 modules transformed; sourcemaps disabled |
-| `/ui/` production-artifact probe | Pass; shell/deep-link HTML, JavaScript asset MIME, missing asset 404, and outside-mount 404 verified |
+## PHP contract coverage
 
-## Bundle/performance result and mandatory architecture constraint
+The 36-test runner verifies foundation and process-health success envelopes;
+`HEAD` and route-specific `OPTIONS`/`Allow`; routing with and without
+`PATH_INFO`; 404/405; malformed/non-object JSON and media types; request and
+correlation IDs; unsafe path encodings; typed route parameters; generic
+non-leaking 500s; 401/403/409/422/429 semantics; no CORS; no Session/machine
+API/DB bootstrap; and OpenAPI schema/status presence.
 
-The Vite build retained a visible performance warning: the main minified chunk
-is **1,641.07 kB / 510.78 kB gzip**. This risk is accepted for G1 only and is not
-a future bundle-size baseline.
+## Frontend contract verification
 
-The owner requires the following from post-G1 frontend implementation:
+The dependency-free generator emits transport DTOs/enums under:
 
-- business routes default to `React.lazy()` / dynamic `import()` or an equivalent
-  route-level lazy mechanism;
-- AppShell synchronously loads only startup-critical platform code;
-- heavy feature-only dependencies (for example DataGrid, charts, editors,
-  CodeBlock/Prism, CMDB/Mapper/diagramming) are split at feature/component level
-  where practical;
-- Calendar, Watchtower, Tickets, CMDB and other business modules must not be
-  allowed to grow the initial shell chunk by default;
-- a later Codex/script work period should add bundle analyzer/treemap evidence so
-  EUI/React/Prism/application contributions are measured instead of guessed.
+```text
+frontend/src/api/generated/ui-contract.ts
+```
 
-The 510.78 kB gzip warning remains visible technical debt.
+`npm run verify:ui-contract` is part of the normal frontend verification gate.
+Generated types are not imported as React domain/view state, and WP-04 adds no
+browser business request.
 
-## Security corrections verified by tests
+The existing frontend gate remains green with 43 unit/component/security tests
+and accepted coverage thresholds. The production build still emits the known
+warning:
 
-- runtime base, app path, and API base use WHATWG URL parsing with same-origin
-  and deployment-base containment;
-- backslashes, control characters, encoded separators, protocol-relative URLs,
-  schemes, and single/double-encoded dot-segment escapes are rejected;
-- locale is limited to canonical `en`, `zh-CN`, or `zh-TW`; IANA timezone and
-  `light|dark|system` color mode are runtime-validated;
-- API endpoints cannot escape the configured `/api/ui/v1/` base;
-- unsafe methods fail closed before fetch when no non-empty CSRF token exists;
-- `credentials: same-origin` cannot be overridden and the custom `expect` option
-  is not leaked into `fetch`.
+```text
+main chunk: 1,641.07 kB minified / 510.78 kB gzip
+```
 
-These are frontend transport protections only. Server-side session, CSRF,
-tenant, capability, and object-scope enforcement still belongs to WP-04/WP-05.
+This warning is not hidden or waived. G1 requires future business routes and
+heavy EUI/editor/chart/mapper components to use route/feature/component-level
+lazy loading.
 
-## Browser and accessibility status — deferred, not passed
+## Corrections retained as evidence
 
-Previous browser installation attempts failed at external download/proxy/DNS
-boundaries before pinned browser assertions could complete. The 2026-08-22
-runtime attempt is recorded in:
+Two issues were found during pre-merge verification and corrected before the
+final version was declared green:
 
-`progress/verification/WP-03-g1-runtime-attempt-2026-08-22.md`
+1. the first JSON media-type regex could consume the `+` separator and reject
+   `application/vnd.*+json`; the final regex and a dedicated test cover it;
+2. an early static scope test scanned comments and mistook a documentation
+   mention of `config.php` for a real include; the final test removes PHP comment
+   tokens before examining executable source and tests actual forbidden calls.
 
-Current truth:
+## Deferred and unclaimed evidence
 
-- Chromium: **deferred; not passed**;
-- Firefox: **deferred; not passed**;
-- WebKit: **deferred; not passed**;
-- axe serious/critical: **deferred; not passed**.
+By explicit G1 owner decision, Playwright Chromium/Firefox/WebKit and axe remain
+deferred to a later Codex/script-capable environment. They are **not** recorded
+as Passed. This debt does not invalidate WP-04's PHP/contract result.
 
-By explicit owner decision on 2026-08-22, this matrix will be executed later via
-Codex/scripts and no longer blocks G1 closure. A future failure must be fixed and
-recorded; the deferment must never be rewritten as historical success.
+Production Apache `/ui/*` SPA fallback remains unimplemented and unverified.
+Only the narrow `/api/ui/v1/.htaccess` front-controller rule is part of WP-04.
 
-## Human QoS decision
+## Stop decision
 
-Project owner decision on 2026-08-22:
-
-| Area | Result |
-|---|---|
-| AppShell + `/ui/` architecture | Pass |
-| Theme and interaction foundation | Pass |
-| Performance/bundle direction | Pass with mandatory lazy/code-splitting requirement |
-| Provider/code maintainability | Pass |
-| Overall Human QoS | **Pass** |
-
-## Corrected failures retained for history
-
-1. ESLint typed rules incorrectly applied to `.mjs` scripts — corrected with a
-   JavaScript-only non-type-checked override.
-2. Two typed lint findings in placeholder pages/boundaries — corrected.
-3. Vite preview returned HTML for `/ui/assets/*` — replaced in E2E with a narrow
-   local static mount that verifies real asset MIME and deep-link fallback.
-4. Browser binary installation/launch evidence remains deferred and is not
-   converted into a pass.
-
-## G1 closure and next boundary
-
-G1 is closed. WP-02 and WP-03 are `Verified complete` under the revised closure
-policy recorded in `progress/DECISION_LOG.md` and
-`progress/G1_CLOSURE_CHECKLIST.md`.
-
-Production Apache `/ui/*` fallback remains separately unimplemented and must
-preserve legacy auth, callback, API, CSAT, QR, file, cron, webhook and stream
-routes when it is eventually reviewed.
-
-WP-04 has **not started in this closure work period**. A subsequent prompt may
-begin WP-04 from the final merged G1 closure commit. The browser matrix remains
-open verification debt for later Codex/script execution.
+WP-04 is complete. WP-05, BFF Session bootstrap, CSRF issuance/validation,
+tenant/RBAC/object-scope enforcement and all business features remain not
+started. User review is mandatory before the next work period.
