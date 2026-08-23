@@ -14,23 +14,23 @@ function renderPath(path: string) {
 }
 
 describe('foundation routes', () => {
-  it('renders the AppShell and foundation page at the configured basename', () => {
+  it('renders the AppShell and lazy foundation page at the configured basename', async () => {
     renderPath('/ui/');
     screen.getByRole('banner');
-    screen.getByRole('heading', { name: /WP-02 architecture review shell/i });
+    await screen.findByRole('heading', { name: /WP-02 architecture review shell/i });
   });
 
-  it('makes the 403 skeleton directly reachable', () => {
+  it('makes the lazy 403 skeleton directly reachable', async () => {
     renderPath('/ui/forbidden');
-    screen.getByRole('heading', { name: /403/i });
+    await screen.findByRole('heading', { name: /403/i });
   });
 
-  it('routes an unknown deep link to the 404 skeleton', () => {
+  it('routes an unknown deep link to the lazy 404 skeleton', async () => {
     renderPath('/ui/nested/not-real');
-    screen.getByRole('heading', { name: /404/i });
+    await screen.findByRole('heading', { name: /404/i });
   });
 
-  it('toggles the EUI color mode control', async () => {
+  it('toggles the EUI color mode control while the route chunk loads', async () => {
     const user = userEvent.setup();
     renderPath('/ui/');
     await user.click(screen.getByRole('button', { name: /Switch to dark mode/i }));
