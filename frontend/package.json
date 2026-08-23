@@ -22,7 +22,8 @@
     "verify:isolation": "node scripts/verify-isolation.mjs",
     "verify:lockfile": "node scripts/verify-lockfile.mjs",
     "verify:preview": "node scripts/verify-preview.mjs",
-    "verify": "npm run verify:structure && npm run verify:isolation && npm run verify:lockfile && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run verify:preview"
+    "verify:bundle": "node scripts/verify-bundle-budget.mjs",
+    "verify": "npm run verify:structure && npm run verify:isolation && npm run verify:lockfile && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run verify:bundle && npm run verify:preview"
   },
   "dependencies": {
     "@elastic/datemath": "5.0.3",
