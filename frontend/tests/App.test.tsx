@@ -20,9 +20,19 @@ describe('foundation routes', () => {
     await screen.findByRole('heading', { name: /WP-02 architecture review shell/i });
   });
 
+  it('loads the architecture review route lazily', async () => {
+    renderPath('/ui/architecture');
+    await screen.findByRole('heading', { name: /Architecture decisions for G1/i });
+  });
+
   it('makes the lazy 403 skeleton directly reachable', async () => {
     renderPath('/ui/forbidden');
     await screen.findByRole('heading', { name: /403/i });
+  });
+
+  it('loads the generic error route lazily', async () => {
+    renderPath('/ui/error');
+    await screen.findByRole('heading', { name: /Something went wrong/i });
   });
 
   it('routes an unknown deep link to the lazy 404 skeleton', async () => {
