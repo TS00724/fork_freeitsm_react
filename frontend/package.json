@@ -18,11 +18,16 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:a11y": "playwright test e2e/a11y.spec.ts",
+    "generate:ui-contract": "node scripts/generate-ui-contract.mjs",
+    "verify:ui-contract": "node scripts/generate-ui-contract.mjs --check",
     "verify:structure": "node scripts/verify-structure.mjs",
     "verify:isolation": "node scripts/verify-isolation.mjs",
     "verify:lockfile": "node scripts/verify-lockfile.mjs",
+    "verify:source-size": "node scripts/verify-source-size.mjs",
+    "measure:bundle": "node scripts/verify-bundle-budget.mjs --measure",
+    "verify:bundle-budget": "node scripts/verify-bundle-budget.mjs",
     "verify:preview": "node scripts/verify-preview.mjs",
-    "verify": "npm run verify:structure && npm run verify:isolation && npm run verify:lockfile && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run verify:preview"
+    "verify": "npm run verify:structure && npm run verify:isolation && npm run verify:lockfile && npm run verify:ui-contract && npm run verify:source-size && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run verify:bundle-budget && npm run verify:preview"
   },
   "dependencies": {
     "@elastic/datemath": "5.0.3",

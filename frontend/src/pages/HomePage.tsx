@@ -1,4 +1,4 @@
-import { EuiCallOut, EuiCodeBlock, EuiSpacer, EuiText, EuiTitle } from '@elastic/eui';
+import { EuiCallOut, EuiSpacer, EuiText, EuiTitle } from '@elastic/eui';
 import { useAuthBoundary } from '../auth/AuthBoundary';
 import { usePermissionBoundary } from '../permissions/PermissionBoundary';
 import { useTenantBoundary } from '../tenants/TenantBoundary';
@@ -7,6 +7,11 @@ export function HomePage() {
   const auth = useAuthBoundary();
   const tenant = useTenantBoundary();
   const permissions = usePermissionBoundary();
+  const boundaryState = JSON.stringify(
+    { auth: auth.status, tenant: tenant.status, permissions: permissions.status },
+    null,
+    2
+  );
 
   return (
     <section>
@@ -20,13 +25,9 @@ export function HomePage() {
       <EuiText>
         <p>Auth, tenant, and permission data remain unresolved until contracts are reviewed after G1.</p>
       </EuiText>
-      <EuiCodeBlock language="json" paddingSize="m" isCopyable>
-        {JSON.stringify(
-          { auth: auth.status, tenant: tenant.status, permissions: permissions.status },
-          null,
-          2
-        )}
-      </EuiCodeBlock>
+      <pre className="foundationJson" aria-label="Foundation boundary state">
+        <code>{boundaryState}</code>
+      </pre>
     </section>
   );
 }

@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "defaultRouteSource": "src/pages/HomePage.tsx",
+  "minimumDynamicRouteEntries": 5,
+  "forwardInitialRouteGzipBytes": null
+}

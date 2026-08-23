@@ -11,7 +11,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    sourcemap: false
+    sourcemap: false,
+    // The local bundle gate reads this manifest to calculate the de-duplicated
+    // entry + static imports + default-route lazy dependency closure.
+    manifest: true
   },
   server: {
     port: 5173,
