@@ -11,7 +11,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    sourcemap: false
+    sourcemap: false,
+    // Used by verify-bundle-budget.mjs to distinguish the startup entry from
+    // route-level dynamic chunks without adding a bundle-analyzer dependency.
+    manifest: true
   },
   server: {
     port: 5173,
