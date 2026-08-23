@@ -1,0 +1,33 @@
+# AGENTS.md
+
+This repository uses the `universal-code-writing` Codex skill for implementation, refactoring, debugging, testing, and code review work.
+
+## Repository workflow
+
+- Read this file before editing code.
+- Prefer existing architecture, naming, package manager, formatter, linter, and test commands.
+- Make the smallest coherent patch. Avoid unrelated rewrites, drive-by formatting, or dependency changes.
+- Add or update tests for externally visible behavior changes and bug fixes.
+- Summarize validation commands and results in the final response.
+
+## Project-specific commands
+
+Fill these in for this repository:
+
+- Install dependencies:
+- Format:
+- Lint:
+- Typecheck:
+- Unit tests:
+- Integration/e2e tests:
+- Build:
+
+## Project-specific rules
+
+Fill these in for this repository:
+
+- Public API compatibility:
+- Database/migration policy:
+- Generated-code policy:
+- Snapshot/golden-file policy:
+- Security/privacy constraints:
