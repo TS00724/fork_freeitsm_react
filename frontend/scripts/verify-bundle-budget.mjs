@@ -104,7 +104,8 @@ for (const absolutePath of await walkJavaScript(distDir)) {
   metricByFile.set(file, {
     file,
     rawBytes: bytes.byteLength,
-    gzipBytes: gzipSync(bytes, { level: 9 }).byteLength,
+    // Match Vite 7's build reporter, which calls node:zlib gzip with default options.
+    gzipBytes: gzipSync(bytes).byteLength,
     entry: file === entryChunk.file
   });
 }
