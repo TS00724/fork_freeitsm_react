@@ -1,6 +1,13 @@
 {
   "version": 1,
   "defaultRouteSource": "src/pages/HomePage.tsx",
+  "requiredDynamicRouteSources": [
+    "src/pages/HomePage.tsx",
+    "src/pages/ArchitectureReviewPage.tsx",
+    "src/pages/ForbiddenPage.tsx",
+    "src/pages/ErrorStatePage.tsx",
+    "src/pages/NotFoundPage.tsx"
+  ],
   "minimumDynamicRouteEntries": 5,
   "forwardInitialRouteGzipBytes": null
 }
