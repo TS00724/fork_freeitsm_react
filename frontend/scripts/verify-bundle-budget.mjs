@@ -54,6 +54,13 @@ function dynamicImportsFrom(manifest, staticKeys) {
   return dynamicKeys;
 }
 
+function manifestKeyForSource(manifest, source) {
+  return Object.keys(manifest).find((key) => {
+    const normalized = normalizePath(key);
+    return normalized === source || normalized.endsWith(`/${source}`);
+  });
+}
+
 function filesForKeys(manifest, keys) {
   const files = new Set();
   for (const key of keys) files.add(assertManifestChunk(manifest, key).file);
@@ -82,8 +89,22 @@ if (budget?.version !== 1) throw new Error('bundle-budget.json version must be 1
 if (typeof budget.defaultRouteSource !== 'string' || !budget.defaultRouteSource) {
   throw new Error('bundle-budget.json defaultRouteSource must be a non-empty string');
 }
-if (!Number.isInteger(budget.minimumDynamicRouteEntries) || budget.minimumDynamicRouteEntries < 1) {
-  throw new Error('bundle-budget.json minimumDynamicRouteEntries must be a positive integer');
+if (!Array.isArray(budget.requiredDynamicRouteSources) || budget.requiredDynamicRouteSources.length === 0) {
+  throw new Error('bundle-budget.json requiredDynamicRouteSources must be a non-empty array');
+}
+const requiredSources = new Set();
+for (const source of budget.requiredDynamicRouteSources) {
+  if (typeof source !== 'string' || source.trim() === '') {
+    throw new Error('Every requiredDynamicRouteSources entry must be a non-empty string');
+  }
+  if (requiredSources.has(source)) throw new Error(`Duplicate required route source: ${source}`);
+  requiredSources.add(source);
+}
+if (!requiredSources.has(budget.defaultRouteSource)) {
+  throw new Error('defaultRouteSource must also appear in requiredDynamicRouteSources');
+}
+if (!Number.isInteger(budget.minimumDynamicRouteEntries) || budget.minimumDynamicRouteEntries < requiredSources.size) {
+  throw new Error('minimumDynamicRouteEntries must be an integer at least as large as requiredDynamicRouteSources');
 }
 if (budget.forwardInitialRouteGzipBytes !== null &&
     (!Number.isInteger(budget.forwardInitialRouteGzipBytes) ||
@@ -112,14 +133,16 @@ for (const absolutePath of await walkJavaScript(distDir)) {
 
 const shellKeys = staticClosure(manifest, [entryKey]);
 const reachableDynamicKeys = dynamicImportsFrom(manifest, shellKeys);
-const defaultRouteKey = Object.keys(manifest).find((key) => {
-  const normalized = normalizePath(key);
-  return normalized === budget.defaultRouteSource || normalized.endsWith(`/${budget.defaultRouteSource}`);
-});
-if (!defaultRouteKey) throw new Error(`Default route source is missing from the manifest: ${budget.defaultRouteSource}`);
-if (manifest[defaultRouteKey]?.isDynamicEntry !== true || !reachableDynamicKeys.has(defaultRouteKey)) {
-  throw new Error(`Default route must remain a dynamic import reachable from the startup shell: ${defaultRouteKey}`);
+const requiredRouteKeys = new Map();
+for (const source of requiredSources) {
+  const key = manifestKeyForSource(manifest, source);
+  if (!key) throw new Error(`Required route source is missing from the manifest: ${source}`);
+  if (manifest[key]?.isDynamicEntry !== true || !reachableDynamicKeys.has(key) || shellKeys.has(key)) {
+    throw new Error(`Required route must remain a dynamic import outside the startup closure: ${source}`);
+  }
+  requiredRouteKeys.set(source, key);
 }
+const defaultRouteKey = requiredRouteKeys.get(budget.defaultRouteSource);
 
 const defaultRouteKeys = staticClosure(manifest, [defaultRouteKey]);
 const initialRouteKeys = new Set([...shellKeys, ...defaultRouteKeys]);
@@ -138,8 +161,10 @@ formatMetrics('Actual /ui/ initial JS transfer', initialRouteMetrics);
 console.log(`Previous G1 baseline gzip bytes: ${G1_INITIAL_ROUTE_GZIP_BYTES}`);
 console.log(`Improvement bytes: ${improvementBytes}`);
 console.log(`Improvement percent: ${improvementPercent.toFixed(2)}%`);
-console.log(`Reachable dynamic route entries: ${reachableDynamicKeys.size}`);
+console.log(`Reachable dynamic entries: ${reachableDynamicKeys.size}`);
 console.log(`Forward initial-route gzip budget: ${budget.forwardInitialRouteGzipBytes ?? 'NOT_SET'}`);
+console.log('Required lazy route entries:');
+for (const [source, key] of requiredRouteKeys) console.log(`  ${source} -> ${manifest[key].file}`);
 
 const largestChunks = [...metricByFile.values()]
   .sort((left, right) => right.gzipBytes - left.gzipBytes)
@@ -159,7 +184,7 @@ if (initialRouteMetrics.gzipBytes >= G1_INITIAL_ROUTE_GZIP_BYTES) {
 }
 if (reachableDynamicKeys.size < budget.minimumDynamicRouteEntries) {
   throw new Error(
-    `Expected at least ${budget.minimumDynamicRouteEntries} reachable dynamic route entries, ` +
+    `Expected at least ${budget.minimumDynamicRouteEntries} reachable dynamic entries, ` +
     `found ${reachableDynamicKeys.size}`
   );
 }
