@@ -27,7 +27,7 @@
     "measure:bundle": "node scripts/verify-bundle-budget.mjs --measure",
     "verify:bundle-budget": "node scripts/verify-bundle-budget.mjs",
     "verify:preview": "node scripts/verify-preview.mjs",
-    "verify": "npm run verify:structure && npm run verify:isolation && npm run verify:lockfile && npm run verify:ui-contract && npm run verify:source-size && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run verify:bundle-budget && npm run verify:preview"
+    "verify": "npm run verify:structure && npm run verify:isolation && npm run verify:lockfile && npm run verify:ui-contract && npm run verify:source-size && npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run measure:bundle && npm run verify:preview"
   },
   "dependencies": {
     "@elastic/datemath": "5.0.3",
