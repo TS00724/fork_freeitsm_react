@@ -4,7 +4,22 @@ Date: 2026-08-25
 Repository: `TS00724/fork_freeitsm_react`  
 Base `main`: `d7385470fb216cf504aac53667c43e7accf31675`  
 Branch: `adj-001-source-size-bundle-governance`  
-Status: **Runtime verification pending — not mergeable**
+Status: **Phase A owner-accepted; Phase B runtime verification deferred**
+
+## Owner decision
+
+The project owner authorizes Phase A integration and the start of WP-05. Phase B
+remains explicit verification debt and is not recorded as Passed.
+
+Required timing:
+
+```text
+Complete Phase B before G2 closure or any React production release,
+whichever occurs first.
+```
+
+If the real `/ui/` initial-route gzip result is `>= 510780`, ADJ-001 becomes a
+blocking adjustment again and further measured splitting is required.
 
 ## Acceptance state
 
@@ -14,14 +29,39 @@ Status: **Runtime verification pending — not mergeable**
 | Responsibility audit | Complete |
 | WP-04 multi-responsibility PHP split | Complete |
 | Five foundation routes implemented as lazy entries | Complete in source; real Vite manifest pending |
+| Technical confidence of `<510780` remediation | **High; engineering assessment only** |
 | Actual `/ui/` gzip below 510,780 | Not measured |
 | Forward budget from real evidence | Not set |
 | Clean `npm ci` | Not run; environment cannot reach npm |
 | Full `npm run verify` | Not run |
 | PHP regression behavior | 36 tests passed in local materialized harness |
-| Review checklist | Static/PHP sections pass; validation blocked |
-| Merge to `main` | No |
-| WP-05 | Not started |
+| Review checklist | Phase A/PHP sections pass; runtime validation deferred |
+| Integration to `main` | Authorized by owner; non-force fast-forward only |
+| WP-05 | Authorized after integration |
+
+## Why confidence is high but not proof
+
+The last verified baseline is:
+
+```text
+1,641.07 kB minified
+510,780 bytes gzip
+```
+
+The prepared change removes known synchronous startup dependencies rather than
+only renaming chunks:
+
+1. Home, Architecture, 403, Error and 404 page modules move from static imports
+   to explicit route-level dynamic imports.
+2. Home removes `EuiCodeBlock`, eliminating the direct Prism/Refractor
+   code-highlighting path from the default route source.
+3. AppShell remains the synchronous route boundary.
+4. The analyzer sums and de-duplicates the entry/static closure and default-route
+   lazy/static closure, preventing a `main.js`/`vendor.js` filename-only pass.
+5. The final gate rejects `>=510780` and requires a measured forward budget.
+
+These properties provide high confidence that the approach can solve the debt,
+but they do not provide the missing production-build number.
 
 ## Source-size gate
 
@@ -45,9 +85,8 @@ hard target is enforced.
 
 ## Responsibility audit
 
-The previous compact `Http.php` and `Router.php` were below physical LOC limits
-but each mixed four distinct responsibilities. The branch replaces them with
-compatibility loaders and one focused class per sibling file:
+The previous compact `Http.php` and `Router.php` mixed four responsibilities each.
+The branch keeps compatibility loaders and moves implementation to focused files:
 
 ```text
 UiApiException.php
@@ -65,13 +104,6 @@ response envelopes and OpenAPI contract remain unchanged.
 
 ## Bundle gate design
 
-The historical baseline remains:
-
-```text
-1,641.07 kB minified
-510,780 bytes gzip
-```
-
 The analyzer uses Vite's manifest and Node default gzip options. It calculates:
 
 1. entry file;
@@ -83,8 +115,8 @@ The analyzer uses Vite's manifest and Node default gzip options. It calculates:
 7. explicit dynamic-entry status for Home, Architecture, 403, Error and 404.
 
 `bundle-budget.json` intentionally keeps `forwardInitialRouteGzipBytes: null`
-until a real production build measures a passing value. `npm run verify` must
-fail until that measured budget is committed.
+until a real production build measures a passing value. This unresolved value is
+part of the retained Phase B debt.
 
 A synthetic manifest test passed and demonstrated shared-chunk de-duplication and
 explicit validation of all five lazy routes. This validates the algorithm, not
@@ -106,7 +138,7 @@ the real application size.
 | synthetic bundle manifest measurement | 0 | Closure/de-dup/lazy-source validation worked |
 | npm registry probe | 1 | `EAI_AGAIN registry.npmjs.org` |
 
-## Required real runtime sequence
+## Deferred Phase B runtime sequence
 
 ```bash
 cd frontend
@@ -120,8 +152,8 @@ npm run build
 npm run measure:bundle
 ```
 
-Then commit a forward budget based on the real measured value and limited
-headroom, followed by:
+Then set a forward budget based on the real measured value plus limited headroom
+and execute:
 
 ```bash
 npm run verify:bundle-budget
@@ -136,7 +168,7 @@ php api/ui/v1/tests/run.php
 git diff --check
 ```
 
-## Exact blocker
+## Exact blocker retained as evidence
 
 ```text
 command:
@@ -150,24 +182,21 @@ stderr:
   reason: getaddrinfo EAI_AGAIN registry.npmjs.org
 ```
 
-`github.com` also does not resolve in the command container. The npm cache is
-approximately empty and no trusted project dependency tree exists. Therefore a
-clean install, Vite production build, real chunk table and final budget cannot be
-claimed in this execution.
+`github.com` also did not resolve in the command container. The npm cache was
+approximately empty and no trusted project dependency tree existed.
 
 ## Universal-code-writing audit
 
 ### Correctness
 
-Pass for source design, accounting algorithm and PHP behavior. Real bundle
-improvement remains unproven until production build evidence exists.
+Pass for Phase A source design, accounting algorithm and PHP behavior. Real
+bundle improvement remains unmeasured.
 
 ### Compatibility
 
-PHP's public class names, `bootstrap.php`, endpoint behavior, response envelopes
-and test suite remain compatible. React basename and observable foundation route
-expectations are preserved in source/tests. Full frontend compatibility gate is
-pending.
+PHP public class names, bootstrap, endpoint behavior, response envelopes and test
+suite remain compatible. React basename and foundation route expectations are
+preserved in source/tests. Full frontend runtime compatibility remains deferred.
 
 ### Security/privacy
 
@@ -176,16 +205,17 @@ credential or business-route implementation was added.
 
 ### Maintainability
 
-Multi-responsibility PHP files were split by domain role, not line slicing.
-No source-size exception is used. Router remains below its orchestration limit.
+Multi-responsibility PHP files were split by domain role, not line slicing. No
+source-size exception is used. Router remains below its orchestration limit.
 
 ### Validation
 
-PHP and dependency-free static checks pass. Clean npm install, TypeScript, lint,
-Vitest coverage, real Vite build, bundle measurement and full verify are blocked
-by DNS/network and remain unclaimed.
+PHP and dependency-free checks pass. Clean npm install, TypeScript, lint, Vitest
+coverage, real Vite build, bundle measurement and full verify are owner-deferred
+and remain unclaimed.
 
 ## Completion decision
 
-ADJ-001 is **not Verified complete**. Keep this branch for runtime verification,
-do not fast-forward `main`, and do not start WP-05.
+ADJ-001 is **not `Verified complete`**. It is **Phase A owner-accepted with Phase
+B deferred**. Integration is authorized so WP-05 can begin, while Phase B remains
+mandatory before G2 closure or React production release.
