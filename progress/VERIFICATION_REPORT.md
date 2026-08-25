@@ -1,11 +1,11 @@
 # FreeITSM React migration verification report
 
-- Report date: 2026-08-22
+- Report date: 2026-08-25
 - Repository: `TS00724/fork_freeitsm_react`
 - WP-04 start SHA: `0bf3eb1516eae4be56689e22fa263c8d89e44821`
-- Scope: WP-04 `/api/ui/v1` front controller and contracts only
+- Current scope: WP-04 complete; ADJ-001 Phase A accepted; WP-05 authorized
 
-## Outcome
+## WP-04 outcome
 
 WP-04 is `Verified complete`: implementation, API/contract, verification and
 documentation are 100%, Confidence Yes. This result covers the transport and
@@ -20,7 +20,7 @@ workflow, Pull Request, upstream write, Go/go-zero or SOC runtime was created.
 
 | Check | Result |
 |---|---|
-| Required base | `main` was `0bf3eb1516eae4be56689e22fa263c8d89e44821` before work |
+| WP-04 required base | `main` was `0bf3eb1516eae4be56689e22fa263c8d89e44821` before WP-04 |
 | Repository | Only `TS00724/fork_freeitsm_react` |
 | Remote/upstream | User fork only; no upstream remote or write |
 | Pull Request / force push | None |
@@ -29,7 +29,7 @@ workflow, Pull Request, upstream write, Go/go-zero or SOC runtime was created.
 | Existing `/api/v1` | Unchanged Bearer machine surface |
 | PHP UI / business modules | Unchanged |
 
-## Delivered routes
+## WP-04 delivered routes
 
 ```text
 GET|HEAD|OPTIONS /api/ui/v1/
@@ -40,15 +40,15 @@ GET|HEAD|OPTIONS /api/ui/v1/health
 path is dispatched through the single `api/ui/v1/index.php` front controller and
 returns the common JSON 404 or 405 envelope.
 
-## Command evidence
+## WP-04 command evidence
 
-The final release-branch archive was materialized into a clean local verification
-directory before the following commands were executed. Complete output is
-summarized in `progress/verification/WP-04-command-results.md`.
+The final WP-04 release-branch archive was materialized into a clean local
+verification directory before the following commands were executed. Complete
+output is summarized in `progress/verification/WP-04-command-results.md`.
 
 | Command | Exit | Result |
 |---|---:|---|
-| `find api/ui/v1 -name '*.php' -print0 \| xargs -0 -n1 php -l` | 0 | All 7 WP-04 PHP files have valid syntax |
+| `find api/ui/v1 -name '*.php' -print0 \| xargs -0 -n1 php -l` | 0 | All WP-04 PHP files had valid syntax |
 | `php api/ui/v1/tests/run.php` | 0 | 36 contract, routing and security-negative tests; 0 failures |
 | OpenAPI JSON decode/version assertion | 0 | Valid JSON; OpenAPI `3.1.0`; required status semantics present |
 | `node frontend/scripts/generate-ui-contract.mjs --check` | 0 | Committed TypeScript exactly matches OpenAPI schemas |
@@ -58,7 +58,7 @@ summarized in `progress/verification/WP-04-command-results.md`.
 | UI API forbidden-scope scan | 0 | No Session start, machine Authorization/Bearer handling, DB config include or business route |
 | `.github/workflows` absence check | 0 | No workflow directory |
 
-## PHP contract coverage
+## WP-04 PHP contract coverage
 
 The 36-test runner verifies foundation and process-health success envelopes;
 `HEAD` and route-specific `OPTIONS`/`Allow`; routing with and without
@@ -79,40 +79,123 @@ frontend/src/api/generated/ui-contract.ts
 Generated types are not imported as React domain/view state, and WP-04 adds no
 browser business request.
 
-The existing frontend gate remains green with 43 unit/component/security tests
-and accepted coverage thresholds. The production build still emits the known
-warning:
+## ADJ-001 Phase A accepted evidence
 
-```text
-main chunk: 1,641.07 kB minified / 510.78 kB gzip
+The owner has accepted ADJ-001 Phase A into the baseline. The accepted scope
+includes:
+
+- dependency-free source-size audit and explicit exception policy;
+- responsibility-based split of the WP-04 HTTP/router classes into focused
+  modules while retaining compatibility loaders;
+- lazy imports for Home, Architecture, 403, generic error and 404 routes;
+- removal of `EuiCodeBlock`/Prism from the default Home route;
+- Vite manifest-based calculation of entry, synchronous shell, default route and
+  de-duplicated actual `/ui/` initial JavaScript dependency closures;
+- preservation of the historical `510,780`-byte gzip baseline as a fail-closed
+  comparison;
+- source-size negative test and PHP syntax/36-contract-test behavior evidence;
+- prepared handoff and runtime command sequence.
+
+Engineering confidence that these changes can produce a real `/ui/` initial
+route below `510,780` gzip bytes is **Yes**. This confidence is based on the
+structural removal of non-startup route modules and CodeBlock/Prism from the
+initial dependency graph, plus a verifier that rejects manual-chunk-only
+relabeling.
+
+## ADJ-001 Phase B deferred — not Passed
+
+The following commands/results remain unavailable in the current runtime and are
+not claimed as successful:
+
+```bash
+cd frontend
+npm ci
+npm run verify:source-size
+npm run typecheck
+npm run lint
+npm run test
+npm run test:coverage
+npm run build
+npm run measure:bundle
 ```
 
-This warning is not hidden or waived. G1 requires future business routes and
-heavy EUI/editor/chart/mapper components to use route/feature/component-level
-lazy loading.
+Consequently the following facts remain unknown:
 
-## Corrections retained as evidence
+- real post-split `/ui/` initial-route raw/gzip bytes;
+- measured improvement bytes and percentage;
+- real top-10 JavaScript chunks;
+- evidence-based `forwardInitialRouteGzipBytes`;
+- final `npm run verify:bundle-budget` and integrated frontend verification.
 
-Two issues were found during pre-merge verification and corrected before the
-final version was declared green:
+The owner explicitly permits WP-05 to start while this evidence is deferred.
+This is a gate change, not a test waiver or a fabricated Pass. ADJ-001 remains at
+60% effective progress with Confidence No for verified completion.
 
-1. the first JSON media-type regex could consume the `+` separator and reject
-   `application/vnd.*+json`; the final regex and a dedicated test cover it;
-2. an early static scope test scanned comments and mistook a documentation
-   mention of `config.php` for a real include; the final test removes PHP comment
-   tokens before examining executable source and tests actual forbidden calls.
+To keep WP-05 development usable, the default `npm run verify` continues to run
+the source-size gate but temporarily excludes the unresolved forward bundle
+budget. The explicit Phase B command is:
+
+```bash
+cd frontend
+npm ci
+npm run verify:adj001-phase-b
+```
+
+After recording the real result, set `frontend/bundle-budget.json`, run:
+
+```bash
+npm run verify:bundle-budget
+npm run verify
+```
+
+ADJ-001 Phase B is mandatory before G2 closes and before any production or
+performance acceptance statement.
+
+## Review-audit status for the gate change
+
+### Correctness
+
+- No unmeasured gzip value is presented as fact.
+- The `510,780`-byte baseline remains visible and enforceable.
+- WP-05 authorization does not alter the ADJ analyzer or lazy-route behavior.
+
+### Compatibility
+
+- Existing `/ui/` basename, WP-04 API/OpenAPI contracts and generated transport
+  boundary remain unchanged.
+- The package adds an explicit deferred Phase B command while preserving normal
+  source-size/type/lint/test/build/preview verification.
+
+### Security/privacy
+
+- No Session, CSRF, tenant, RBAC/object-scope implementation is introduced by
+  this transition record.
+- No secrets, machine API keys or cross-origin credential behavior is added.
+
+### Maintainability
+
+- Source-size governance remains in the default verify path.
+- Responsibility-based modules remain the required pattern; mechanical slicing
+  is still prohibited.
+
+### Validation
+
+- Phase B is explicitly `Deferred / Not verified`.
+- G2 cannot close until the missing runtime evidence is supplied.
 
 ## Deferred and unclaimed evidence
 
 By explicit G1 owner decision, Playwright Chromium/Firefox/WebKit and axe remain
 deferred to a later Codex/script-capable environment. They are **not** recorded
-as Passed. This debt does not invalidate WP-04's PHP/contract result.
+as Passed.
 
 Production Apache `/ui/*` SPA fallback remains unimplemented and unverified.
-Only the narrow `/api/ui/v1/.htaccess` front-controller rule is part of WP-04.
+Only the narrow `/api/ui/v1/.htaccess` front-controller rule is currently in
+scope.
 
-## Stop decision
+## Current transition decision
 
-WP-04 is complete. WP-05, BFF Session bootstrap, CSRF issuance/validation,
-tenant/RBAC/object-scope enforcement and all business features remain not
-started. User review is mandatory before the next work period.
+WP-04 remains complete. ADJ-001 Phase A is accepted, while Phase B is retained as
+pre-G2 verification debt. WP-05 is authorized to start, but Calendar,
+Watchtower, Tickets and all other business features remain frozen until the
+security foundation and G2 review permit them.
