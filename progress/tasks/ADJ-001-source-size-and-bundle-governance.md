@@ -1,9 +1,10 @@
 # ADJ-001 — source-size, responsibility and bundle governance
 
-Status: **Queued before WP-05**  
+Status: **Ready for Runtime Verification; not mergeable**  
 Type: adjustment / technical-debt control  
-Base after governance merge: read current `main` before execution  
-Candidate implementation branch to inspect, not trust blindly: `perf-main-chunk-lazy-split`
+Base `main`: `d7385470fb216cf504aac53667c43e7accf31675`  
+Working branch: `adj-001-source-size-bundle-governance`  
+Candidate inspected, not merged: `perf-main-chunk-lazy-split`
 
 ## Why this task exists
 
@@ -27,13 +28,31 @@ Every implementation/review pass for this task must read and use:
 
 The universal skill supplies the implementation workflow; the review checklist supplies the final audit dimensions. FreeITSM-specific numeric limits and migration rules live in `AGENTS.md`.
 
+## Current execution state
+
+PHASE A is complete on the working branch:
+
+- dependency-free source-size gate implemented;
+- foundation routes converted to explicit lazy entries;
+- default Home route no longer imports `EuiCodeBlock`/Prism;
+- Vite manifest and actual initial-route closure analyzer implemented;
+- all five foundation source paths must be reachable dynamic entries;
+- forward budget remains `null` until a real production measurement exists;
+- multi-responsibility WP-04 `Http.php` and `Router.php` were split into focused sibling classes while retaining compatibility loaders;
+- no LOC exception is used;
+- local PHP lint and the existing 36-test contract/security-negative runner passed;
+- synthetic source-size negative and bundle-manifest accounting checks behaved as expected;
+- `handoffs/ADJ-001.md` and `progress/verification/ADJ-001-source-size-bundle-results.md` record the evidence.
+
+PHASE B remains blocked because the command environment cannot resolve `github.com` or `registry.npmjs.org`, has an effectively empty npm cache and has no trusted project `node_modules`. A real `npm ci`, Vite build, gzip measurement and measured forward budget remain mandatory.
+
 ## Scope
 
 ### A. Source responsibility / LOC gate
 
-Implement a dependency-free source audit, preferably under `frontend/scripts/`, that checks new/materially changed React/UI-BFF code against the repository thresholds in `AGENTS.md`.
+The dependency-free audit under `frontend/scripts/verify-source-size.mjs` checks new/materially changed React/UI-BFF code against the repository thresholds in `AGENTS.md`.
 
-Minimum behavior:
+Required behavior:
 
 - report file path and physical LOC;
 - distinguish review threshold from hard target;
@@ -42,11 +61,9 @@ Minimum behavior:
 - keep exception policy narrow and reviewable;
 - do not reward mechanical file slicing; reviewer audit must still check responsibility boundaries.
 
-Integrate the gate into the repository's normal local verification path (`npm run verify` or a clearly documented equivalent for mixed PHP/frontend changes).
+The gate is integrated into the repository's normal local frontend verification path.
 
 ### B. Bundle/initial-route gate
-
-Take the existing `perf-main-chunk-lazy-split` branch only as candidate work. Re-read/diff it against current `main`; do not merge it blindly.
 
 The final implementation must:
 
@@ -57,7 +74,8 @@ The final implementation must:
 - calculate gzip bytes for the actual `/ui/` initial-route dependency closure (entry + static imports + default-route lazy chunk/dependencies, de-duplicated);
 - keep the historical 510,780-byte gzip value visible as the G1 baseline;
 - fail if the initial-route transfer does not measurably improve over that baseline;
-- report per-chunk raw/gzip sizes so later tuning is evidence-based.
+- report per-chunk raw/gzip sizes so later tuning is evidence-based;
+- require Home, Architecture, 403, generic Error and 404 source modules to remain explicit lazy entries.
 
 After the first real build, set a tighter forward budget only from measured evidence; do not invent a target that the build has never demonstrated.
 
@@ -78,17 +96,38 @@ This adjustment task must not start:
 - Go/go-zero, clustering or SOC runtime;
 - GitHub Actions or a Pull Request.
 
-## Acceptance evidence
+## Acceptance evidence still required
 
 Run in an environment that can materialize the exact repository and dependencies:
 
 ```bash
 cd frontend
 npm ci
+npm run verify:source-size
+npm run typecheck
+npm run lint
+npm run test
+npm run test:coverage
+npm run build
+npm run measure:bundle
+```
+
+If the actual `/ui/` gzip result is below 510,780 bytes, set a forward budget from that measured value plus limited headroom, then rerun:
+
+```bash
+npm run verify:bundle-budget
 npm run verify
 ```
 
-The verification record must include:
+Also run:
+
+```bash
+find api/ui/v1 -name '*.php' -print0 | xargs -0 -n1 php -l
+php api/ui/v1/tests/run.php
+git diff --check
+```
+
+The final verification record must include:
 
 - exact starting and ending SHA;
 - Node/npm versions;
@@ -101,13 +140,13 @@ The verification record must include:
 - `git diff --check` or repository equivalent;
 - review-checklist audit summary.
 
-If any required command cannot run, status remains `Blocked` or `Not verified`; do not merge the candidate performance branch merely from static inspection.
+If any required command cannot run, status remains `Blocked` or `Not verified`; do not merge the branch merely from static inspection.
 
 ## Completion / stop rule
 
 When ADJ-001 is verified:
 
 1. update `progress/WORK_PROGRESS.md`, `progress/VERIFICATION_REPORT.md` and `progress/DECISION_LOG.md`;
-2. create `handoffs/ADJ-001.md` with command evidence and measured before/after bundle data;
+2. finalize `handoffs/ADJ-001.md` with command evidence and measured before/after bundle data;
 3. non-force fast-forward `main` only after re-reading the expected remote base;
 4. stop again before WP-05 so the user can review the measured bundle result and source-governance policy.
