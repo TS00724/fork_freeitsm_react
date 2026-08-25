@@ -27,11 +27,12 @@ A substantial patch is not complete merely because tests pass: its final review 
 | Metric | Value |
 |---|---:|
 | Verified work packages | 4 / 37 |
-| Current package | **ADJ-001 queued before WP-05 — source-size/responsibility + bundle governance** |
+| Current package | **WP-05 authorized to start; ADJ-001 Phase B remains deferred verification debt** |
 | G1 | Closed |
-| Next implementation task | `progress/tasks/ADJ-001-source-size-and-bundle-governance.md` |
-| Next normal work package | WP-05 only after ADJ-001 verified and user review |
-| Next mandatory gate | G2 after WP-05 |
+| Owner decision | ADJ-001 Phase A accepted with high remediation confidence; real npm/Vite measurement deferred |
+| Current implementation task | WP-05 Session/CSRF/tenant/RBAC/object-scope security foundation |
+| Mandatory deferred task | ADJ-001 Phase B must be completed before G2 closure or production release, whichever occurs first |
+| Next mandatory gate | G2 after WP-05 plus ADJ-001 Phase B evidence |
 | GitHub Actions | Not used |
 | Pull requests | None |
 | Go/go-zero | Future only; not implemented |
@@ -43,9 +44,9 @@ A substantial patch is not complete merely because tests pass: its final review 
 | WP-01 | P00 | Baseline, inventory, route/API matrix and controls | Verified complete | 100 | 100 | 100 | 100 | 100 | Yes | Complete |
 | WP-02 | P01 | Isolated React 18/TS/EUI/Vite scaffold | Verified complete | 100 | 100 | 100 | 100 | 100 | Yes | G1 closed; deferred browser debt retained |
 | WP-03 | P02 | Architecture walkthrough, G1 decisions, ADRs and test strategy | Verified complete | 100 | 100 | 100 | 100 | 100 | Yes | G1 closed |
-| WP-04 | P03 | `/api/ui/v1` front controller, route/envelope/OpenAPI/TS contract foundation | **Verified complete** | 100 | 100 | 100 | 100 | 100 | Yes | Complete; user requested governance adjustment before WP-05 |
-| **ADJ-001** | Adjustment | Source-size/responsibility audit + real initial-route gzip budget + lazy splitting verification | **Queued** | 0 | 100 | 0 | 100 | 0 | No | Must run real `npm ci && npm run verify`; stop for user review before WP-05 |
-| WP-05 | P03 | Session, CSRF, tenant, RBAC and object scope | Not started | 0 | 0 | 0 | 0 | 0 | No | Blocked by ADJ-001 review; G2 after completion |
+| WP-04 | P03 | `/api/ui/v1` front controller, route/envelope/OpenAPI/TS contract foundation | Verified complete | 100 | 100 | 100 | 100 | 100 | Yes | Complete |
+| **ADJ-001** | Adjustment | Source-size/responsibility audit + initial-route gzip governance + lazy splitting | **Phase A owner-accepted; Phase B deferred** | 100 | 100 | 60 | 100 | 60 | **Yes — remediation direction; runtime measurement unverified** | Does not block WP-05; real gzip/forward-budget/full frontend gate required before G2 or production |
+| **WP-05** | P03 | Session, CSRF, tenant, RBAC and object scope | **Authorized to start** | 0 | 0 | 0 | 0 | 0 | No | Implement security foundation only; G2 after completion and deferred-debt review |
 | WP-06 | P04 | AppShell, routing, theme and i18n | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
 | WP-07 | P04 | Notifications, search, files and streams | Not started | 0 | 0 | 0 | 0 | 0 | No | Future |
 | WP-08 | P05 | Historical Watchtower pilot | Not started / frozen | 0 | 0 | 0 | 0 | 0 | No | G2 must reconcile pilot schedule |
@@ -79,37 +80,66 @@ A substantial patch is not complete merely because tests pass: its final review 
 | WP-36 | P17 | SOC subsystem contract/future boundary | Not started | 0 | 0 | 0 | 0 | 0 | No | Contracts only; no Go work |
 | WP-37 | P17 | Cutover, rollback and legacy retirement | Not started | 0 | 0 | 0 | 0 | 0 | No | G7 |
 
+## ADJ-001 owner decision and confidence record — 2026-08-25
+
+The project owner explicitly authorizes ADJ-001 Phase B runtime verification to
+be executed later and authorizes WP-05 to start after the Phase A implementation
+is integrated. This is a gate change, not a fabricated test result.
+
+ADJ-001 is **not** `Verified complete`. The following remain unclaimed:
+
+- clean `npm ci` on the ADJ tree;
+- full TypeScript/lint/Vitest/Vite verification;
+- actual `/ui/` initial-route gzip value;
+- measured forward bundle budget;
+- final `npm run verify` with that budget.
+
+Technical confidence that the implementation can reduce the `/ui/` initial-route
+payload below the historical 510,780-byte gzip baseline is **high**, for these
+specific reasons:
+
+1. all five foundation page modules have moved from synchronous imports to
+   explicit route-level dynamic imports;
+2. the default Home route no longer imports `EuiCodeBlock`, removing the
+   Prism/Refractor code-highlighting path from the route source;
+3. AppShell remains the only synchronous route composition boundary;
+4. the bundle analyzer measures the de-duplicated entry + static imports +
+   default-route lazy/static closure, so moving bytes between filenames cannot
+   create a false pass;
+5. the future gate will fail unless the measured initial route is below 510,780
+   bytes and a measured forward budget is committed.
+
+This is an engineering-confidence assessment, **not production-build evidence**.
+The 510,780-byte value remains the last verified baseline until Phase B runs.
+
+Phase B is mandatory before either:
+
+- G2 is closed; or
+- any React UI production release is approved,
+
+whichever occurs first. If Phase B measures `>= 510780`, the debt reopens as a
+blocking adjustment and further measured splitting is required.
+
 ## Repository guiding / audit policy
 
-The checked-in skill is the default guide for Codex/GPT Pro coding tasks; it is intentionally kept separate from project-specific policy:
+The checked-in skill is the default guide for Codex/GPT Pro coding tasks:
 
-- generic workflow source: `skills/universal-code-writing/SKILL.md`;
+- generic workflow: `skills/universal-code-writing/SKILL.md`;
 - language details: `skills/universal-code-writing/references/language-profiles.md`;
 - final audit: `skills/universal-code-writing/references/review-checklist.md`;
-- compact task prompt patterns: `skills/universal-code-writing/references/task-templates.md`;
-- project-specific enforcement/table-of-contents: `AGENTS.md`.
+- project-specific enforcement: `AGENTS.md`.
 
-Source-size limits are not permission for mechanical splitting. New/materially changed files must also remain responsibility-bounded; a file mixing transport, mapping, state and rendering can require splitting below the numeric limit. Generated code and untouched legacy PHP are excluded from the new-code LOC policy.
+Source-size limits are not permission for mechanical splitting. New/materially
+changed files must also remain responsibility-bounded. Generated code and
+untouched legacy PHP are excluded from the new-code LOC policy.
 
-## WP-04 delivered boundary
+## Retained debts
 
-- one executable `/api/ui/v1/index.php` front controller;
-- declarative foundation route table with `GET/HEAD/OPTIONS /` and `/health`;
-- strict method, path, `Content-Type`, JSON-object and typed-parameter parsing;
-- versioned success/error envelopes and 400/401/403/404/405/409/415/422/429/500 semantics;
-- validated/generated request and correlation IDs in headers and bodies;
-- unresolved server context slots for actor, tenant/company, capabilities, locale and timezone;
-- OpenAPI 3.1 source plus dependency-free TypeScript transport generation/check;
-- PHP syntax and 36 contract/security-negative tests;
-- full frontend `npm ci` and `npm run verify` gate with generated-contract drift check;
-- no Session, CSRF, tenant/RBAC/object-scope enforcement, DB access or business routes.
+- ADJ-001 Phase B: real npm/Vite bundle measurement and forward budget;
+- Playwright Chromium/Firefox/WebKit and axe: deferred, not Passed;
+- production Apache `/ui/*` SPA fallback: unimplemented;
+- historical bundle baseline: **1,641.07 kB minified / 510.78 kB gzip** until
+  superseded by real Phase B evidence.
 
-## Retained debts and current stop
-
-Playwright Chromium/Firefox/WebKit and axe remain explicitly deferred by the G1 owner decision and are **not** recorded as Passed.
-
-The last verified React foundation baseline remains **1,641.07 kB minified / 510.78 kB gzip** for the previous single main chunk. A candidate branch `perf-main-chunk-lazy-split` exists, but it has not been accepted into `main` because the current environment has not produced the required real `npm ci` + production-build gzip evidence. ADJ-001 owns that verification and any necessary follow-up splitting.
-
-Production Apache `/ui/*` SPA fallback is still a separate task. WP-04 added only the narrow `/api/ui/v1/.htaccess` rewrite and did not modify root `.htaccess`.
-
-**Current stop: execute ADJ-001 only. Do not start WP-05 until ADJ-001 has real source-size/bundle evidence, a completed universal-code-writing review audit, updated handoff/progress, and explicit user review.**
+**Current boundary: WP-05 may start. Business features, WP-06 and later work
+remain frozen.**
