@@ -5,8 +5,9 @@ declare(strict_types=1);
 final class UiApiRouter
 {
     private array $routes;
+    private UiApiSecurityRuntime $security;
 
-    public function __construct(array $routes)
+    public function __construct(array $routes, UiApiSecurityRuntime $security)
     {
         foreach ($routes as $route) {
             if (!$route instanceof UiApiRoute) {
@@ -14,6 +15,7 @@ final class UiApiRouter
             }
         }
         $this->routes = array_values($routes);
+        $this->security = $security;
     }
 
     public function dispatch(
@@ -23,23 +25,14 @@ final class UiApiRouter
     ): UiApiHttpResponse {
         $matches = [];
         $allowed = [];
-
         foreach ($this->routes as $route) {
             $parameters = $route->match($request->path());
-            if ($parameters === null) {
-                continue;
-            }
-
+            if ($parameters === null) continue;
             $matches[] = [$route, $parameters];
             $allowed[] = $route->method();
-            if ($route->method() === 'GET') {
-                $allowed[] = 'HEAD';
-            }
+            if ($route->method() === 'GET') $allowed[] = 'HEAD';
         }
-
-        if ($matches === []) {
-            throw UiApiException::notFound();
-        }
+        if ($matches === []) throw UiApiException::notFound();
 
         $allowed[] = 'OPTIONS';
         $allowed = $this->sortMethods(array_values(array_unique($allowed)));
@@ -60,19 +53,21 @@ final class UiApiRouter
 
         $effectiveMethod = $request->method() === 'HEAD' ? 'GET' : $request->method();
         foreach ($matches as [$route, $parameters]) {
-            if ($route->method() !== $effectiveMethod) {
-                continue;
-            }
-
-            $result = $route->invoke($request, $context, $parameters);
+            if ($route->method() !== $effectiveMethod) continue;
+            $authorizedContext = $this->security->authorize(
+                $route->security(),
+                $request,
+                $context,
+                $parameters
+            );
+            $result = $route->invoke($request, $authorizedContext, $parameters);
             if ($result instanceof UiApiHttpResponse) {
                 $response = $result;
             } elseif (is_array($result)) {
-                $response = $responses->success($result, $context);
+                $response = $responses->success($result, $authorizedContext);
             } else {
                 throw new RuntimeException('Route handler returned an unsupported response type.');
             }
-
             return $request->method() === 'HEAD' ? $response->withoutBody() : $response;
         }
 
@@ -88,7 +83,6 @@ final class UiApiRouter
             return ($leftPosition === false ? 999 : $leftPosition) <=>
                 ($rightPosition === false ? 999 : $rightPosition);
         });
-
         return $methods;
     }
 }
