@@ -1,0 +1,1 @@
+Temporary note: Session cookie option shapes are being verified before WP-05 closure. This file will be superseded by the final command-results report.
