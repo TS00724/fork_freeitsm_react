@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/lib/bootstrap.php';
-ini_set('error_log', sys_get_temp_dir() . '/freeitsm-wp04-ui-api-test.log');
+require_once __DIR__ . '/Wp05Fakes.php';
+ini_set('error_log', sys_get_temp_dir() . '/freeitsm-wp05-ui-api-test.log');
 
 $tests = [];
 function wp04Test(string $name, callable $test): void { global $tests; $tests[] = [$name, $test]; }
@@ -11,12 +12,25 @@ function wp04Assert(bool $condition, string $message = 'Assertion failed'): void
 function wp04Same($expected, $actual, string $message = ''): void { if ($expected !== $actual) throw new RuntimeException(($message === '' ? 'Values differ' : $message) . '\nExpected: ' . var_export($expected, true) . '\nActual: ' . var_export($actual, true)); }
 function wp04Json(UiApiHttpResponse $response): array { $decoded = json_decode($response->body(), true); wp04Assert(is_array($decoded), 'Response must contain a JSON object. Body: ' . $response->body()); return $decoded; }
 function wp04Server(string $method, string $path, array $headers = []): array {
-    $server = ['REQUEST_METHOD' => $method, 'PATH_INFO' => $path, 'REQUEST_URI' => '/api/ui/v1/index.php' . $path, 'SCRIPT_NAME' => '/api/ui/v1/index.php'];
-    foreach ($headers as $name => $value) { $key = strtoupper(str_replace('-', '_', $name)); if ($key === 'CONTENT_TYPE') $server['CONTENT_TYPE'] = $value; else $server['HTTP_' . $key] = $value; }
+    $server = [
+        'REQUEST_METHOD' => $method,
+        'PATH_INFO' => $path,
+        'REQUEST_URI' => '/api/ui/v1/index.php' . $path,
+        'SCRIPT_NAME' => '/api/ui/v1/index.php',
+        'HTTP_HOST' => 'desk.example.test',
+        'HTTPS' => 'on',
+        'SERVER_PORT' => 443,
+    ];
+    foreach ($headers as $name => $value) {
+        $key = strtoupper(str_replace('-', '_', $name));
+        if ($key === 'CONTENT_TYPE') $server['CONTENT_TYPE'] = $value;
+        else $server['HTTP_' . $key] = $value;
+    }
     return $server;
 }
 
-$routes = array_merge(require dirname(__DIR__) . '/lib/routes.php', [
+[$foundationRuntime] = wp05Runtime(new Wp05ArraySessionStore());
+$routes = array_merge(uiApiRoutes($foundationRuntime), [
     new UiApiRoute('POST', '#^/echo$#', 'test.echo', static function (UiApiRequest $request): array { return ['body' => $request->jsonObject()]; }),
     new UiApiRoute('GET', '#^/items/(?P<id>[^/]+)$#', 'test.item', static function (UiApiRequest $request, UiApiRequestContext $context, array $parameters): array { unset($request, $context); return ['id' => $parameters['id']]; }, ['id' => 'positive_int']),
     new UiApiRoute('GET', '#^/boom$#', 'test.boom', static function (): array { throw new RuntimeException('SECRET_TOKEN at /private/server/path.php:99'); }),
@@ -26,7 +40,7 @@ $routes = array_merge(require dirname(__DIR__) . '/lib/routes.php', [
     new UiApiRoute('GET', '#^/status/422$#', 'test.422', static function (): array { throw UiApiException::validation('The command is invalid.', ['field' => 'title']); }),
     new UiApiRoute('GET', '#^/status/429$#', 'test.429', static function (): array { throw UiApiException::rateLimited(15); }),
 ]);
-$kernel = uiApiBuildKernel($routes);
+$kernel = uiApiBuildKernel($routes, $foundationRuntime);
 
 wp04Test('GET / success envelope', static function () use ($kernel): void { $r=$kernel->handleServer(wp04Server('GET','/')); wp04Same(200,$r->status()); $j=wp04Json($r); wp04Same('FreeITSM Browser UI API',$j['data']['name']); wp04Same('1',$j['meta']['apiVersion']); });
 wp04Test('GET /health process-only', static function () use ($kernel): void { $j=wp04Json($kernel->handleServer(wp04Server('GET','/health'))); wp04Same('ok',$j['data']['status']); wp04Same('not_checked',$j['data']['checks']['database']); wp04Same('not_checked',$j['data']['checks']['session']); });
@@ -62,15 +76,16 @@ wp04Test('409 semantics', static function () use ($kernel): void { $r=$kernel->h
 wp04Test('422 semantics', static function () use ($kernel): void { $r=$kernel->handleServer(wp04Server('GET','/status/422')); wp04Same(422,$r->status()); wp04Same('validation_failed',wp04Json($r)['error']['code']); });
 wp04Test('429 Retry-After', static function () use ($kernel): void { $r=$kernel->handleServer(wp04Server('GET','/status/429')); wp04Same(429,$r->status()); wp04Same('15',$r->header('Retry-After')); });
 wp04Test('no CORS grant', static function () use ($kernel): void { $r=$kernel->handleServer(wp04Server('GET','/')); wp04Same(null,$r->header('Access-Control-Allow-Origin')); wp04Same(null,$r->header('Access-Control-Allow-Credentials')); });
-wp04Test('production PHP has no Session, DB config or machine auth call', static function (): void {
+wp04Test('production UI API stays separate from machine and business APIs', static function (): void {
     $root=dirname(__DIR__); $source=''; foreach (array_merge(glob($root.'/*.php')?:[],glob($root.'/lib/*.php')?:[]) as $file) $source.=file_get_contents($file)?:'';
     $code=''; foreach (token_get_all($source) as $token) { if (is_array($token) && ($token[0]===T_COMMENT || $token[0]===T_DOC_COMMENT)) continue; $code.=is_array($token)?$token[1]:$token; }
-    wp04Assert(preg_match('/\bsession_start\s*\(/i',$code)!==1,'Session start detected.');
     wp04Assert(stripos($code,'HTTP_AUTHORIZATION')===false,'Machine Authorization header detected.');
     wp04Assert(stripos($code,'Bearer ')===false,'Bearer API key detected.');
-    wp04Assert(preg_match('/\b(?:require|include)(?:_once)?\b[^;]*config\.php/i',$code)!==1,'Database config include detected.');
+    foreach(['calendar','watchtower','ticket','asset','knowledge','cmdb'] as $feature) wp04Assert(stripos($code,"#^/$feature")===false,'Business route detected: '.$feature);
 });
 wp04Test('OpenAPI declares required semantics', static function (): void { $c=json_decode((string)file_get_contents(dirname(__DIR__).'/openapi.json'),true); wp04Same('3.1.0',$c['openapi']??null); foreach(['400','401','403','404','405','409','415','422','429','500'] as $s) wp04Assert(isset($c['x-freeitsm-status-semantics'][$s]),'Missing '.$s); wp04Assert(isset($c['components']['schemas']['UiApiErrorEnvelope'])); });
+
+require __DIR__ . '/security.php';
 
 $failures=0;
 foreach($tests as $index=>$entry){ try{$entry[1](); echo 'PASS '.str_pad((string)($index+1),2,'0',STR_PAD_LEFT).' '.$entry[0].PHP_EOL;}catch(Throwable $error){$failures++; echo 'FAIL '.str_pad((string)($index+1),2,'0',STR_PAD_LEFT).' '.$entry[0].PHP_EOL.'     '.$error->getMessage().PHP_EOL;} }
