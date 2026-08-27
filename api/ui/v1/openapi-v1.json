@@ -1,0 +1,274 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FreeITSM Browser UI API",
+    "version": "1.1.0",
+    "description": "Same-origin PHP-Session browser BFF. The browser never reads the HttpOnly Session cookie and never receives a machine API key."
+  },
+  "servers": [{ "url": "/api/ui/v1" }],
+  "x-freeitsm-status-semantics": {
+    "400": "Malformed method, path, JSON or route parameter",
+    "401": "No valid analyst Session or the Session actor no longer exists",
+    "403": "Authenticated but blocked by password, CSRF, tenant, capability, module or object policy",
+    "404": "Unknown endpoint or deliberately hidden object-scope denial",
+    "405": "Known route with unsupported method",
+    "409": "Version, state or write conflict",
+    "415": "Unsupported request media type",
+    "422": "Semantically invalid command",
+    "429": "Rate limited",
+    "500": "Unexpected server error with no internal detail leakage"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "getUiApiFoundation",
+        "responses": {
+          "200": { "description": "Transport and security-foundation metadata", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiFoundationEnvelope" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getUiApiProcessHealth",
+        "responses": {
+          "200": { "description": "Process-only health; database and Session are explicitly not checked", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiHealthEnvelope" } } } },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/session": {
+      "get": {
+        "operationId": "getUiApiSession",
+        "security": [{}, { "cookieAuth": [] }],
+        "description": "Returns an anonymous probe or an authenticated UI bootstrap. An authenticated response includes a Session-bound CSRF token but never the Session identifier.",
+        "responses": {
+          "200": { "description": "Anonymous or authenticated Session state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiSessionEnvelope" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/session/tenant": {
+      "post": {
+        "operationId": "switchUiApiTenant",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/CsrfToken" }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiTenantSwitchCommand" } } }
+        },
+        "responses": {
+          "200": { "description": "Updated bootstrap with a rotated CSRF token", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiAuthenticatedSessionEnvelope" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "415": { "$ref": "#/components/responses/UnsupportedMediaType" },
+          "422": { "$ref": "#/components/responses/ValidationFailed" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "PHPSESSID",
+        "description": "Illustrative PHP Session cookie name. The actual session_name() may be configured; the HttpOnly cookie is browser-managed and must never be read by React."
+      }
+    },
+    "parameters": {
+      "CsrfToken": {
+        "name": "X-CSRF-Token",
+        "in": "header",
+        "required": true,
+        "schema": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "description": "Synchronizer token bound to the current PHP Session ID. Origin or Referer must also match the server origin."
+      }
+    },
+    "responses": {
+      "BadRequest": { "description": "Bad request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "Unauthorized": { "description": "No valid analyst Session", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "Forbidden": { "description": "Security policy denied the request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "UnsupportedMediaType": { "description": "JSON object required", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "ValidationFailed": { "description": "Semantic validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } },
+      "ServerError": { "description": "Generic non-leaking error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UiApiErrorEnvelope" } } } }
+    },
+    "schemas": {
+      "UiApiMeta": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["apiVersion", "requestId", "correlationId", "timestamp"],
+        "properties": {
+          "apiVersion": { "const": "1" },
+          "requestId": { "type": "string" },
+          "correlationId": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UiApiErrorCode": {
+        "type": "string",
+        "enum": ["invalid_method", "invalid_path", "invalid_host", "invalid_json", "invalid_route_parameter", "unauthenticated", "forbidden", "csrf_failed", "csrf_origin_failed", "password_change_required", "not_found", "method_not_allowed", "conflict", "unsupported_media_type", "validation_failed", "rate_limited", "server_error"]
+      },
+      "UiApiError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "$ref": "#/components/schemas/UiApiErrorCode" },
+          "message": { "type": "string" },
+          "details": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "UiApiErrorEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["error", "meta"],
+        "properties": {
+          "error": { "$ref": "#/components/schemas/UiApiError" },
+          "meta": { "$ref": "#/components/schemas/UiApiMeta" }
+        }
+      },
+      "UiApiActor": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "username", "displayName", "email", "isAdmin", "authSource"],
+        "properties": {
+          "id": { "type": "integer", "minimum": 1 },
+          "username": { "type": "string" },
+          "displayName": { "type": "string" },
+          "email": { "type": "string" },
+          "isAdmin": { "type": "boolean" },
+          "authSource": { "type": "string", "enum": ["local", "ldap", "oidc", "external"] }
+        }
+      },
+      "UiApiTenant": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "slug"],
+        "properties": {
+          "id": { "type": "integer", "minimum": 1 },
+          "name": { "type": "string" },
+          "slug": { "type": "string" }
+        }
+      },
+      "UiApiCsrf": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["headerName", "token"],
+        "properties": {
+          "headerName": { "const": "X-CSRF-Token" },
+          "token": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      },
+      "UiApiLinks": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["login", "logout", "passwordChange"],
+        "properties": {
+          "login": { "type": "string" },
+          "logout": { "type": "string" },
+          "passwordChange": { "type": "string" }
+        }
+      },
+      "UiApiAnonymousSession": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["authenticated", "links"],
+        "properties": {
+          "authenticated": { "const": false },
+          "links": { "$ref": "#/components/schemas/UiApiLinks" }
+        }
+      },
+      "UiApiAuthenticatedSession": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["authenticated", "actor", "activeTenant", "availableTenants", "capabilities", "modules", "locale", "timezone", "csrf", "links"],
+        "properties": {
+          "authenticated": { "const": true },
+          "actor": { "$ref": "#/components/schemas/UiApiActor" },
+          "activeTenant": { "$ref": "#/components/schemas/UiApiTenant" },
+          "availableTenants": { "type": "array", "items": { "$ref": "#/components/schemas/UiApiTenant" } },
+          "capabilities": { "type": "array", "items": { "type": "string" } },
+          "modules": { "type": "array", "items": { "type": "string" } },
+          "locale": { "type": "string" },
+          "timezone": { "type": "string" },
+          "csrf": { "$ref": "#/components/schemas/UiApiCsrf" },
+          "links": { "$ref": "#/components/schemas/UiApiLinks" }
+        }
+      },
+      "UiApiSessionData": {
+        "oneOf": [
+          { "$ref": "#/components/schemas/UiApiAnonymousSession" },
+          { "$ref": "#/components/schemas/UiApiAuthenticatedSession" }
+        ]
+      },
+      "UiApiSessionEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data", "meta"],
+        "properties": {
+          "data": { "$ref": "#/components/schemas/UiApiSessionData" },
+          "meta": { "$ref": "#/components/schemas/UiApiMeta" }
+        }
+      },
+      "UiApiAuthenticatedSessionEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data", "meta"],
+        "properties": {
+          "data": { "$ref": "#/components/schemas/UiApiAuthenticatedSession" },
+          "meta": { "$ref": "#/components/schemas/UiApiMeta" }
+        }
+      },
+      "UiApiTenantSwitchCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tenantId"],
+        "properties": { "tenantId": { "type": "integer", "minimum": 1 } }
+      },
+      "UiApiFoundationData": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["name", "version", "surface", "authentication", "routes", "security"],
+        "properties": {
+          "name": { "type": "string" },
+          "version": { "const": "v1" },
+          "surface": { "const": "same-origin-browser-bff" },
+          "authentication": { "const": "php-session" },
+          "routes": { "type": "array", "items": { "type": "string" } },
+          "security": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      },
+      "UiApiFoundationEnvelope": {
+        "type": "object",
+        "required": ["data", "meta"],
+        "properties": { "data": { "$ref": "#/components/schemas/UiApiFoundationData" }, "meta": { "$ref": "#/components/schemas/UiApiMeta" } }
+      },
+      "UiApiHealthData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status", "scope", "checks"],
+        "properties": {
+          "status": { "const": "ok" },
+          "scope": { "const": "ui-api-process" },
+          "checks": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["database", "session"],
+            "properties": { "database": { "const": "not_checked" }, "session": { "const": "not_checked" } }
+          }
+        }
+      },
+      "UiApiHealthEnvelope": {
+        "type": "object",
+        "required": ["data", "meta"],
+        "properties": { "data": { "$ref": "#/components/schemas/UiApiHealthData" }, "meta": { "$ref": "#/components/schemas/UiApiMeta" } }
+      }
+    }
+  }
+}
