@@ -9,25 +9,26 @@ final class UiApiRoute
     private string $name;
     private $handler;
     private array $parameterTypes;
+    private UiApiRouteSecurity $security;
 
     public function __construct(
         string $method,
         string $pattern,
         string $name,
         callable $handler,
-        array $parameterTypes = []
+        array $parameterTypes = [],
+        ?UiApiRouteSecurity $security = null
     ) {
         $this->method = strtoupper($method);
         $this->pattern = $pattern;
         $this->name = $name;
         $this->handler = $handler;
         $this->parameterTypes = $parameterTypes;
+        $this->security = $security ?? UiApiRouteSecurity::publicRoute();
     }
 
-    public function method(): string
-    {
-        return $this->method;
-    }
+    public function method(): string { return $this->method; }
+    public function security(): UiApiRouteSecurity { return $this->security; }
 
     public function match(string $path): ?array
     {
