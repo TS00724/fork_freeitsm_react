@@ -23,25 +23,10 @@ final class UiApiException extends RuntimeException
         $this->responseHeaders = $headers;
     }
 
-    public function httpStatus(): int
-    {
-        return $this->httpStatus;
-    }
-
-    public function errorCode(): string
-    {
-        return $this->errorCode;
-    }
-
-    public function details(): ?array
-    {
-        return $this->details;
-    }
-
-    public function responseHeaders(): array
-    {
-        return $this->responseHeaders;
-    }
+    public function httpStatus(): int { return $this->httpStatus; }
+    public function errorCode(): string { return $this->errorCode; }
+    public function details(): ?array { return $this->details; }
+    public function responseHeaders(): array { return $this->responseHeaders; }
 
     public static function badRequest(string $code, string $message, ?array $details = null): self
     {
@@ -57,6 +42,28 @@ final class UiApiException extends RuntimeException
         string $message = 'The authenticated actor is not permitted to perform this action.'
     ): self {
         return new self(403, 'forbidden', $message);
+    }
+
+    public static function csrfFailed(string $message): self
+    {
+        return new self(403, 'csrf_failed', $message);
+    }
+
+    public static function csrfOriginFailed(): self
+    {
+        return new self(403, 'csrf_origin_failed', 'The request origin is not accepted.');
+    }
+
+    public static function passwordChangeRequired(?string $url = null): self
+    {
+        $details = ['passwordChangeRequired' => true];
+        if ($url !== null && $url !== '') $details['url'] = $url;
+        return new self(
+            403,
+            'password_change_required',
+            'The password must be changed before continuing.',
+            $details
+        );
     }
 
     public static function notFound(): self
