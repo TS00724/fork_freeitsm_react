@@ -9,6 +9,7 @@ final class UiApiRequest
     private array $headers;
     private array $query;
     private string $rawBody;
+    private string $serverOrigin;
     private bool $jsonParsed = false;
     private array $jsonObject = [];
 
@@ -17,13 +18,15 @@ final class UiApiRequest
         string $path,
         array $headers,
         array $query,
-        string $body
+        string $body,
+        string $serverOrigin
     ) {
         $this->method = $method;
         $this->path = $path;
         $this->headers = $headers;
         $this->query = $query;
         $this->rawBody = $body;
+        $this->serverOrigin = $serverOrigin;
     }
 
     public static function fromServer(array $server, array $query = [], ?string $body = null): self
@@ -35,34 +38,26 @@ final class UiApiRequest
 
         $path = self::resolvePath($server, $query);
         self::assertSafePath($path);
-
         if ($body === null) {
             $input = file_get_contents('php://input');
             $body = $input === false ? '' : $input;
         }
 
-        return new self($method, $path, self::extractHeaders($server), $query, $body);
+        return new self(
+            $method,
+            $path,
+            self::extractHeaders($server),
+            $query,
+            $body,
+            UiApiServerOrigin::fromServer($server)
+        );
     }
 
-    public function method(): string
-    {
-        return $this->method;
-    }
-
-    public function path(): string
-    {
-        return $this->path;
-    }
-
-    public function query(): array
-    {
-        return $this->query;
-    }
-
-    public function rawBody(): string
-    {
-        return $this->rawBody;
-    }
+    public function method(): string { return $this->method; }
+    public function path(): string { return $this->path; }
+    public function query(): array { return $this->query; }
+    public function rawBody(): string { return $this->rawBody; }
+    public function serverOrigin(): string { return $this->serverOrigin; }
 
     public function header(string $name): ?string
     {
@@ -72,15 +67,10 @@ final class UiApiRequest
 
     public function jsonObject(): array
     {
-        if ($this->jsonParsed) {
-            return $this->jsonObject;
-        }
-
+        if ($this->jsonParsed) return $this->jsonObject;
         $this->jsonParsed = true;
         $trimmed = trim($this->rawBody);
-        if ($trimmed === '') {
-            return $this->jsonObject = [];
-        }
+        if ($trimmed === '') return $this->jsonObject = [];
 
         $contentType = strtolower(trim(explode(';', (string) ($this->header('content-type') ?? ''))[0]));
         if (preg_match('~^application/(?:[a-z0-9!#$&^_.\-]+\+)?json$~i', $contentType) !== 1) {
@@ -94,19 +84,14 @@ final class UiApiRequest
         if (!is_array($decoded) || json_last_error() !== JSON_ERROR_NONE) {
             throw UiApiException::badRequest('invalid_json', 'Request body must be a valid JSON object.');
         }
-
         return $this->jsonObject = $decoded;
     }
 
     private static function resolvePath(array $server, array $query): string
     {
         $path = (string) ($server['PATH_INFO'] ?? '');
-        if ($path === '') {
-            $path = (string) ($server['ORIG_PATH_INFO'] ?? '');
-        }
-        if ($path === '' && isset($query['path'])) {
-            $path = (string) $query['path'];
-        }
+        if ($path === '') $path = (string) ($server['ORIG_PATH_INFO'] ?? '');
+        if ($path === '' && isset($query['path'])) $path = (string) $query['path'];
         if ($path === '') {
             $requestPath = parse_url((string) ($server['REQUEST_URI'] ?? ''), PHP_URL_PATH);
             $scriptName = str_replace('\\', '/', (string) ($server['SCRIPT_NAME'] ?? ''));
@@ -121,7 +106,6 @@ final class UiApiRequest
                 }
             }
         }
-
         return $path === '' ? '/' : '/' . ltrim($path, '/');
     }
 
@@ -133,13 +117,11 @@ final class UiApiRequest
                 $headers[strtolower(str_replace('_', '-', substr((string) $key, 5)))] = trim((string) $value);
             }
         }
-
         if (isset($server['CONTENT_TYPE'])) {
             $headers['content-type'] = trim((string) $server['CONTENT_TYPE']);
         } elseif (isset($server['HTTP_CONTENT_TYPE'])) {
             $headers['content-type'] = trim((string) $server['HTTP_CONTENT_TYPE']);
         }
-
         return $headers;
     }
 
@@ -173,9 +155,7 @@ final class UiApiRequest
                     );
                 }
                 $next = rawurldecode($decoded);
-                if ($next === $decoded) {
-                    break;
-                }
+                if ($next === $decoded) break;
                 $decoded = $next;
             }
 
@@ -203,11 +183,8 @@ final class UiApiRequest
     {
         for ($index = 0, $length = strlen($value); $index < $length; $index++) {
             $ord = ord($value[$index]);
-            if ($ord <= 31 || $ord === 127) {
-                return true;
-            }
+            if ($ord <= 31 || $ord === 127) return true;
         }
-
         return false;
     }
 }
