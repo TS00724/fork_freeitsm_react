@@ -9,6 +9,7 @@ final class UiApiRequest
     private array $headers;
     private array $query;
     private string $rawBody;
+    private string $serverOrigin;
     private bool $jsonParsed = false;
     private array $jsonObject = [];
 
@@ -17,13 +18,15 @@ final class UiApiRequest
         string $path,
         array $headers,
         array $query,
-        string $body
+        string $body,
+        string $serverOrigin
     ) {
         $this->method = $method;
         $this->path = $path;
         $this->headers = $headers;
         $this->query = $query;
         $this->rawBody = $body;
+        $this->serverOrigin = $serverOrigin;
     }
 
     public static function fromServer(array $server, array $query = [], ?string $body = null): self
@@ -41,28 +44,21 @@ final class UiApiRequest
             $body = $input === false ? '' : $input;
         }
 
-        return new self($method, $path, self::extractHeaders($server), $query, $body);
+        return new self(
+            $method,
+            $path,
+            self::extractHeaders($server),
+            $query,
+            $body,
+            UiApiServerOrigin::fromServer($server)
+        );
     }
 
-    public function method(): string
-    {
-        return $this->method;
-    }
-
-    public function path(): string
-    {
-        return $this->path;
-    }
-
-    public function query(): array
-    {
-        return $this->query;
-    }
-
-    public function rawBody(): string
-    {
-        return $this->rawBody;
-    }
+    public function method(): string { return $this->method; }
+    public function path(): string { return $this->path; }
+    public function query(): array { return $this->query; }
+    public function rawBody(): string { return $this->rawBody; }
+    public function serverOrigin(): string { return $this->serverOrigin; }
 
     public function header(string $name): ?string
     {
@@ -207,7 +203,6 @@ final class UiApiRequest
                 return true;
             }
         }
-
         return false;
     }
 }
